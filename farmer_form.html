@@ -246,16 +246,6 @@
 
 <div class="container">
 
-  <!-- Webhook setup banner -->
-  <div id="webhookBanner">
-    <span class="warn-icon">⚠️</span>
-    <div>
-      <strong>尚未設定 Google 試算表連結</strong><br>
-      請在下方填入 Apps Script 部署網址，資料才能自動存入試算表。
-      <a href="#setup-section">查看設定說明 ↓</a>
-    </div>
-  </div>
-
   <div id="formSection">
     <!-- 農夫資料 -->
     <div class="card">
@@ -360,16 +350,7 @@
 
 <script>
 // ─── Webhook ───────────────────────────────────────────────
-let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
-function saveWebhook(v) {
-  WEBHOOK_URL = v.trim();
-  localStorage.setItem('webhookUrl', WEBHOOK_URL);
-  document.getElementById('webhookBanner').classList.toggle('hidden', !!WEBHOOK_URL);
-}
-if (WEBHOOK_URL) {
-  document.getElementById('webhookUrl').value = WEBHOOK_URL;
-  document.getElementById('webhookBanner').classList.add('hidden');
-}
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxPUIaq_zAms9YQ5XhckQZTE_qGLP5uPEdG4axgNbh192T1dcupiqEnaltChOvpFcXy/exec';
 
 // ─── Week default ─────────────────────────────────────────
 (function(){
