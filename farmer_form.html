@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>農產品供應登記</title>
+<style>
+  :root {
+    --green-50: #EAF3DE;
+    --green-100: #C0DD97;
+    --green-400: #639922;
+    --green-600: #3B6D11;
+    --green-800: #27500A;
+    --amber-50: #FAEEDA;
+    --amber-400: #BA7517;
+    --gray-50: #F1EFE8;
+    --gray-100: #D3D1C7;
+    --gray-400: #888780;
+    --gray-600: #5F5E5A;
+    --gray-800: #444441;
+    --red-50: #FCEBEB;
+    --red-400: #E24B4A;
+    --red-600: #A32D2D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', 'PingFang TC', sans-serif;
+    background: #f5f4ef;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--green-800);
+    padding: 1.25rem 1.5rem;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .header h1 {
+    font-size: 17px; font-weight: 600;
+    color: #fff; letter-spacing: 0.02em;
+  }
+  .header-icon {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* Main container */
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  /* Webhook banner */
+  #webhookBanner {
+    background: #fff3cd;
+    border: 1.5px solid #f0c040;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: #7a5500;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  #webhookBanner.hidden { display: none; }
+  #webhookBanner .warn-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  #webhookBanner a { color: var(--green-600); font-weight: 600; text-decoration: underline; }
+
+  /* Section card */
+  .card {
+    background: #fff;
+    border: 1px solid #e2e0d8;
+    border-radius: 14px;
+    padding: 1.1rem 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  /* Fields */
+  .field { margin-bottom: 11px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px; color: var(--gray-600);
+    margin-bottom: 5px;
+  }
+  input[type=text], input[type=tel], input[type=week], input[type=number], select, textarea {
+    width: 100%;
+    border: 1px solid #d8d6cc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1a1a18;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green-400);
+    box-shadow: 0 0 0 3px rgba(99,153,34,0.12);
+  }
+  input[type=number] { -moz-appearance: textfield; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Produce items */
+  .item-header {
+    display: grid;
+    grid-template-columns: 1fr 90px 80px 36px;
+    gap: 8px; margin-bottom: 6px; padding: 0 2px;
+  }
+  .item-header span {
+    font-size: 11px; color: var(--gray-400); font-weight: 500;
+  }
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 80px 36px;
+    gap: 8px; margin-bottom: 8px; align-items: center;
+  }
+  .item-row input, .item-row select {
+    padding: 9px 10px; font-size: 14px;
+  }
+  .qty-wrap { display: flex; gap: 5px; }
+  .qty-wrap input { flex: 1; min-width: 0; }
+  .qty-wrap select { padding: 9px 24px 9px 6px; font-size: 13px; flex: none; width: 62px; }
+  .remove-btn {
+    background: none; border: 1px solid #e0ded6;
+    border-radius: 8px; width: 36px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--gray-400); font-size: 18px;
+    transition: all 0.15s;
+  }
+  .remove-btn:hover { border-color: var(--red-400); color: var(--red-400); background: var(--red-50); }
+
+  .add-btn {
+    width: 100%; margin-top: 4px;
+    border: 1.5px dashed #ccc;
+    border-radius: 8px; padding: 10px;
+    background: var(--gray-50); color: var(--gray-600);
+    font-size: 14px; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 6px; transition: all 0.15s;
+  }
+  .add-btn:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
+
+  /* Notes */
+  textarea { resize: vertical; min-height: 72px; font-size: 14px; }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%; padding: 14px;
+    background: var(--green-600); color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 16px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+    display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+  .submit-btn:hover { background: var(--green-800); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+  /* States */
+  .success-box {
+    display: none;
+    background: var(--green-50);
+    border: 1.5px solid var(--green-100);
+    border-radius: 12px;
+    padding: 1.25rem 1.1rem;
+    text-align: center;
+  }
+  .success-box .big-check {
+    font-size: 40px; margin-bottom: 10px;
+    display: block;
+  }
+  .success-box h2 { font-size: 18px; color: var(--green-800); margin-bottom: 6px; }
+  .success-box p { font-size: 14px; color: var(--green-600); line-height: 1.6; }
+  .success-box .re-btn {
+    margin-top: 16px;
+    background: var(--green-600); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px;
+    font-family: inherit; cursor: pointer;
+    font-weight: 500;
+  }
+
+  .error-msg {
+    display: none;
+    background: var(--red-50); color: var(--red-600);
+    border: 1px solid #f5b8b8; border-radius: 8px;
+    padding: 0.8rem 1rem; font-size: 13px;
+    margin-top: 10px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Footer */
+  .footer {
+    text-align: center; font-size: 12px;
+    color: var(--gray-400); margin-top: 2rem;
+    padding-bottom: 1rem;
+  }
+
+  @media (max-width: 400px) {
+    .item-header { grid-template-columns: 1fr 88px 76px 32px; }
+    .item-row { grid-template-columns: 1fr 88px 76px 32px; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-icon">🌿</div>
+    <h1>本週農產品供應登記</h1>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Webhook setup banner -->
+  <div id="webhookBanner">
+    <span class="warn-icon">⚠️</span>
+    <div>
+      <strong>尚未設定 Google 試算表連結</strong><br>
+      請在下方填入 Apps Script 部署網址，資料才能自動存入試算表。
+      <a href="#setup-section">查看設定說明 ↓</a>
+    </div>
+  </div>
+
+  <div id="formSection">
+    <!-- 農夫資料 -->
+    <div class="card">
+      <div class="card-title">農夫資料</div>
+      <div class="row2">
+        <div class="field">
+          <label>農夫姓名 <span style="color:var(--red-400)">*</span></label>
+          <input type="text" id="farmerName" placeholder="例：陳大明" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label>聯絡電話</label>
+          <input type="tel" id="farmerPhone" placeholder="0912-345-678" />
+        </div>
+      </div>
+      <div class="row2" style="margin-top:11px">
+        <div class="field">
+          <label>農場 / 產地</label>
+          <input type="text" id="farmerFarm" placeholder="例：花蓮壽豐有機農場" />
+        </div>
+        <div class="field">
+          <label>登記週次</label>
+          <input type="week" id="weekDate" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:11px">
+        <label>認證方式</label>
+        <select id="certification">
+          <option value="">未填 / 一般</option>
+          <option value="有機認證">有機認證</option>
+          <option value="產銷履歷">產銷履歷</option>
+          <option value="友善耕作">友善耕作</option>
+          <option value="自然農法">自然農法</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 農產品品項 -->
+    <div class="card">
+      <div class="card-title">農產品品項 <span id="itemCountLabel" style="font-size:11px; color:var(--gray-400); font-weight:400; text-transform:none; letter-spacing:0;"></span></div>
+
+      <div class="item-header">
+        <span>品名 *</span>
+        <span>數量 *</span>
+        <span>單價 (元) *</span>
+        <span></span>
+      </div>
+
+      <div id="itemsContainer"></div>
+
+      <button class="add-btn" onclick="addItem()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        新增品項
+      </button>
+    </div>
+
+    <!-- 備註 -->
+    <div class="card">
+      <div class="card-title">備註（選填）</div>
+      <textarea id="notes" placeholder="例：小番茄下週供應量會增加、本週有特殊規格歡迎詢問…"></textarea>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+      送出登記
+    </button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Success state -->
+  <div class="success-box" id="successBox">
+    <span class="big-check">✅</span>
+    <h2>登記成功！</h2>
+    <p id="successDetail"></p>
+    <button class="re-btn" onclick="resetForm()">再填一次</button>
+  </div>
+
+  <!-- Setup instructions -->
+  <div id="setup-section" class="card" style="margin-top:1.5rem; background:#fafaf7;">
+    <div class="card-title" style="color:var(--amber-400)">⚙️ Google 試算表設定說明</div>
+    <ol style="font-size:13px; color:var(--gray-600); line-height:1.9; padding-left:1.2rem;">
+      <li>開啟 <a href="https://sheets.new" target="_blank" style="color:var(--green-600); font-weight:600">sheets.new</a> 建立新試算表</li>
+      <li>在第一列填入欄位（可直接複製）：<br>
+        <code style="background:#eee; padding:3px 7px; border-radius:5px; font-size:12px; display:inline-block; margin-top:4px; line-height:1.8; word-break:break-all;">時間戳記	姓名	電話	農場	週次	認證	品名	數量	單位	單價	備註</code>
+      </li>
+      <li>點「延伸功能 → Apps Script」，貼上 <strong>apps_script.gs</strong> 的程式碼</li>
+      <li>點「部署 → 新增部署」→ 類型選「網路應用程式」→ 執行身分「我」→ 存取「所有人」</li>
+      <li>複製部署網址，填入下方欄位</li>
+    </ol>
+    <div class="field" style="margin-top:12px">
+      <label style="font-weight:600; color:var(--gray-800)">Apps Script 部署網址</label>
+      <input type="text" id="webhookUrl" placeholder="https://script.google.com/macros/s/…/exec"
+        style="font-size:13px;"
+        oninput="saveWebhook(this.value)" />
+    </div>
+    <p style="font-size:12px; color:var(--gray-400); margin-top:6px;">此設定儲存在您的瀏覽器，不會上傳。</p>
+  </div>
+
+  <div class="footer">農產品供應登記系統 · 感謝農友填寫</div>
+</div>
+
+<script>
+// ─── Webhook ───────────────────────────────────────────────
+let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
+function saveWebhook(v) {
+  WEBHOOK_URL = v.trim();
+  localStorage.setItem('webhookUrl', WEBHOOK_URL);
+  document.getElementById('webhookBanner').classList.toggle('hidden', !!WEBHOOK_URL);
+}
+if (WEBHOOK_URL) {
+  document.getElementById('webhookUrl').value = WEBHOOK_URL;
+  document.getElementById('webhookBanner').classList.add('hidden');
+}
+
+// ─── Week default ─────────────────────────────────────────
+(function(){
+  const d = new Date();
+  const yr = d.getFullYear();
+  const start = new Date(yr,0,1);
+  const wk = Math.ceil(((d - start)/864e5 + start.getDay()+1)/7);
+  document.getElementById('weekDate').value = `${yr}-W${String(wk).padStart(2,'0')}`;
+})();
+
+// ─── Items ────────────────────────────────────────────────
+let items = [];
+let nid = 1;
+const UNITS = ['公斤','台斤','顆','束','盒','袋','打','斤','份'];
+
+function addItem(n='',q='',u='公斤',p=''){
+  items.push({id:nid++,name:n,qty:q,unit:u,price:p});
+  renderItems();
+}
+function removeItem(id){ items=items.filter(i=>i.id!==id); renderItems(); }
+function updateItem(id,f,v){ const i=items.find(x=>x.id===id); if(i) i[f]=v; updateCount(); }
+
+function renderItems(){
+  const c=document.getElementById('itemsContainer');
+  c.innerHTML='';
+  items.forEach(item=>{
+    const row=document.createElement('div');
+    row.className='item-row';
+    const unitOpts=UNITS.map(u=>`<option${u===item.unit?' selected':''}>${u}</option>`).join('');
+    row.innerHTML=`
+      <input type="text" value="${esc(item.name)}" placeholder="品名，例：小番茄"
+        onchange="updateItem(${item.id},'name',this.value)"
+        oninput="updateItem(${item.id},'name',this.value)" />
+      <div class="qty-wrap">
+        <input type="number" min="0" value="${esc(item.qty)}" placeholder="數量"
+          onchange="updateItem(${item.id},'qty',this.value)"
+          oninput="updateItem(${item.id},'qty',this.value)" />
+        <select onchange="updateItem(${item.id},'unit',this.value)">${unitOpts}</select>
+      </div>
+      <input type="number" min="0" value="${esc(item.price)}" placeholder="單價"
+        onchange="updateItem(${item.id},'price',this.value)"
+        oninput="updateItem(${item.id},'price',this.value)" />
+      <button class="remove-btn" onclick="removeItem(${item.id})" aria-label="刪除">×</button>
+    `;
+    c.appendChild(row);
+  });
+  updateCount();
+}
+function updateCount(){
+  const n=items.filter(i=>i.name&&i.qty&&i.price).length;
+  document.getElementById('itemCountLabel').textContent=items.length?`（${n}/${items.length} 項完整）`:'';
+}
+function esc(s){ return String(s||'').replace(/"/g,'&quot;'); }
+
+addItem(); addItem();
+
+// ─── Submit ───────────────────────────────────────────────
+async function handleSubmit(){
+  const name=document.getElementById('farmerName').value.trim();
+  if(!name){ showErr('請填寫農夫姓名'); document.getElementById('farmerName').focus(); return; }
+  const valid=items.filter(i=>i.name&&i.qty&&i.price);
+  if(!valid.length){ showErr('請至少填寫一項農產品（品名、數量、單價都要填）'); return; }
+
+  if(!WEBHOOK_URL){
+    showErr('尚未設定 Google 試算表連結，請在下方填入 Apps Script 部署網址後再試。');
+    document.getElementById('setup-section').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> 送出中…';
+  hideErr();
+
+  const ts=new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
+  const rows=valid.map(i=>({
+    時間戳記:ts,
+    姓名:name,
+    電話:document.getElementById('farmerPhone').value.trim(),
+    農場:document.getElementById('farmerFarm').value.trim(),
+    週次:document.getElementById('weekDate').value,
+    認證:document.getElementById('certification').value,
+    品名:i.name,
+    數量:i.qty,
+    單位:i.unit,
+    單價:i.price,
+    備註:document.getElementById('notes').value.trim()
+  }));
+
+  try{
+    await fetch(WEBHOOK_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({rows})
+    });
+    showSuccess(name, valid);
+  }catch(e){
+    showErr('連線失敗，請確認網路或 Apps Script 網址是否正確。');
+    btn.disabled=false;
+    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
+  }
+}
+
+function showSuccess(name, valid){
+  document.getElementById('formSection').style.display='none';
+  const box=document.getElementById('successBox');
+  box.style.display='block';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('successDetail').textContent=
+    `${name} 共登記 ${valid.length} 項農產品：${valid.map(i=>i.name).join('、')}。資料已寫入 Google 試算表。`;
+}
+
+function resetForm(){
+  document.getElementById('formSection').style.display='block';
+  document.getElementById('successBox').style.display='none';
+  document.getElementById('farmerName').value='';
+  document.getElementById('farmerPhone').value='';
+  document.getElementById('farmerFarm').value='';
+  document.getElementById('notes').value='';
+  document.getElementById('certification').value='';
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=false;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
+  items=[]; nid=1; addItem(); addItem();
+}
+
+function showErr(msg){ const e=document.getElementById('errorMsg'); e.style.display='block'; e.textContent=msg; e.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function hideErr(){ document.getElementById('errorMsg').style.display='none'; }
+</script>
+</body>
+</html>
