@@ -29,8 +29,6 @@
     min-height: 100vh;
     padding: 0;
   }
-
-  /* Header */
   .header {
     background: var(--green-800);
     padding: 1.25rem 1.5rem;
@@ -46,36 +44,15 @@
     color: #fff; letter-spacing: 0.02em;
   }
   .header-icon {
-    width: 28px; height: 28px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 8px;
+    width: 200px; height: 80px;
     display: flex; align-items: center; justify-content: center;
     font-size: 16px;
   }
-
-  /* Main container */
   .container {
     max-width: 640px;
     margin: 0 auto;
     padding: 1.25rem 1rem 3rem;
   }
-
-  /* Webhook banner */
-  #webhookBanner {
-    background: #fff3cd;
-    border: 1.5px solid #f0c040;
-    border-radius: 10px;
-    padding: 0.9rem 1rem;
-    margin-bottom: 1rem;
-    font-size: 13px;
-    color: #7a5500;
-    display: flex; gap: 8px; align-items: flex-start;
-  }
-  #webhookBanner.hidden { display: none; }
-  #webhookBanner .warn-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  #webhookBanner a { color: var(--green-600); font-weight: 600; text-decoration: underline; }
-
-  /* Section card */
   .card {
     background: #fff;
     border: 1px solid #e2e0d8;
@@ -89,8 +66,6 @@
     text-transform: uppercase; letter-spacing: 0.08em;
     margin-bottom: 12px;
   }
-
-  /* Fields */
   .field { margin-bottom: 11px; }
   .field:last-child { margin-bottom: 0; }
   label {
@@ -98,7 +73,7 @@
     font-size: 13px; color: var(--gray-600);
     margin-bottom: 5px;
   }
-  input[type=text], input[type=tel], input[type=week], input[type=number], select, textarea {
+  input[type=text], input[type=tel], input[type=week], input[type=date], input[type=number], select, textarea {
     width: 100%;
     border: 1px solid #d8d6cc;
     border-radius: 8px;
@@ -118,11 +93,9 @@
   input[type=number] { -moz-appearance: textfield; }
   select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* Produce items */
   .item-header {
     display: grid;
-    grid-template-columns: 1fr 90px 80px 36px;
+    grid-template-columns: 1fr 130px 70px 36px;
     gap: 8px; margin-bottom: 6px; padding: 0 2px;
   }
   .item-header span {
@@ -130,14 +103,13 @@
   }
   .item-row {
     display: grid;
-    grid-template-columns: 1fr 90px 80px 36px;
-    gap: 8px; margin-bottom: 8px; align-items: center;
+    grid-template-columns: 1fr 130px 70px 36px;
+    gap: 8px; margin-bottom: 8px; padding: 0 2px; align-items: center;
   }
   .item-row input, .item-row select {
     padding: 9px 10px; font-size: 14px;
   }
   .qty-wrap { display: flex; gap: 5px; }
-  .qty-wrap input { flex: 1; min-width: 0; }
   .qty-wrap select { padding: 9px 24px 9px 6px; font-size: 13px; flex: none; width: 62px; }
   .remove-btn {
     background: none; border: 1px solid #e0ded6;
@@ -147,7 +119,6 @@
     transition: all 0.15s;
   }
   .remove-btn:hover { border-color: var(--red-400); color: var(--red-400); background: var(--red-50); }
-
   .add-btn {
     width: 100%; margin-top: 4px;
     border: 1.5px dashed #ccc;
@@ -158,11 +129,7 @@
     justify-content: center; gap: 6px; transition: all 0.15s;
   }
   .add-btn:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
-
-  /* Notes */
   textarea { resize: vertical; min-height: 72px; font-size: 14px; }
-
-  /* Submit */
   .submit-btn {
     width: 100%; padding: 14px;
     background: var(--green-600); color: #fff;
@@ -177,8 +144,6 @@
   .submit-btn:hover { background: var(--green-800); }
   .submit-btn:active { transform: scale(0.98); }
   .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-
-  /* States */
   .success-box {
     display: none;
     background: var(--green-50);
@@ -187,10 +152,7 @@
     padding: 1.25rem 1.1rem;
     text-align: center;
   }
-  .success-box .big-check {
-    font-size: 40px; margin-bottom: 10px;
-    display: block;
-  }
+  .success-box .big-check { font-size: 40px; margin-bottom: 10px; display: block; }
   .success-box h2 { font-size: 18px; color: var(--green-800); margin-bottom: 6px; }
   .success-box p { font-size: 14px; color: var(--green-600); line-height: 1.6; }
   .success-box .re-btn {
@@ -198,10 +160,8 @@
     background: var(--green-600); color: #fff;
     border: none; border-radius: 8px;
     padding: 10px 24px; font-size: 14px;
-    font-family: inherit; cursor: pointer;
-    font-weight: 500;
+    font-family: inherit; cursor: pointer; font-weight: 500;
   }
-
   .error-msg {
     display: none;
     background: var(--red-50); color: var(--red-600);
@@ -209,7 +169,6 @@
     padding: 0.8rem 1rem; font-size: 13px;
     margin-top: 10px;
   }
-
   .spinner {
     display: inline-block;
     width: 18px; height: 18px;
@@ -220,148 +179,97 @@
     flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Footer */
   .footer {
     text-align: center; font-size: 12px;
     color: var(--gray-400); margin-top: 2rem;
     padding-bottom: 1rem;
   }
-
   @media (max-width: 400px) {
-    .item-header { grid-template-columns: 1fr 88px 76px 32px; }
-    .item-row { grid-template-columns: 1fr 88px 76px 32px; }
+    .item-header { grid-template-columns: 1fr 120px 70px 32px; }
+    .item-row { grid-template-columns: 1fr 120px 70px 32px; }
     .row2 { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-inner">
-    <div class="header-icon">🌿</div>
-    <h1>本週農產品供應登記</h1>
+    <div class="header-icon"><img src="data:image/png;base64,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" alt="logo" /></div>
+    <h1>菜車供應登記</h1>
   </div>
 </div>
-
 <div class="container">
-
   <div id="formSection">
-    <!-- 農夫資料 -->
     <div class="card">
-      <div class="card-title">農夫資料</div>
+      <div class="card-title">基本資料</div>
       <div class="row2">
         <div class="field">
-          <label>農夫姓名 <span style="color:var(--red-400)">*</span></label>
-          <input type="text" id="farmerName" placeholder="例：陳大明" autocomplete="name" />
+          <label for="weekDate">登記週次</label>
+          <input type="date" id="weekDate" />
         </div>
         <div class="field">
-          <label>聯絡電話</label>
-          <input type="tel" id="farmerPhone" placeholder="0912-345-678" />
+          <label>農場 / 產地 <span style="color:var(--red-400)">*</span></label>
+          <input type="text" id="farmerFarm" placeholder="例：好好吃有機農場" />
         </div>
       </div>
       <div class="row2" style="margin-top:11px">
         <div class="field">
-          <label>農場 / 產地</label>
-          <input type="text" id="farmerFarm" placeholder="例：花蓮壽豐有機農場" />
+          <label>登記人</label>
+          <input type="text" id="register" placeholder="例：游大海" autocomplete="register" />
         </div>
-        <div class="field">
-          <label>登記週次</label>
-          <input type="week" id="weekDate" />
-        </div>
-      </div>
-      <div class="field" style="margin-top:11px">
-        <label>認證方式</label>
-        <select id="certification">
-          <option value="">未填 / 一般</option>
-          <option value="有機認證">有機認證</option>
-          <option value="產銷履歷">產銷履歷</option>
-          <option value="友善耕作">友善耕作</option>
-          <option value="自然農法">自然農法</option>
-          <option value="其他">其他</option>
-        </select>
       </div>
     </div>
-
-    <!-- 農產品品項 -->
     <div class="card">
       <div class="card-title">農產品品項 <span id="itemCountLabel" style="font-size:11px; color:var(--gray-400); font-weight:400; text-transform:none; letter-spacing:0;"></span></div>
-
       <div class="item-header">
         <span>品名 *</span>
         <span>數量 *</span>
         <span>單價 (元) *</span>
         <span></span>
       </div>
-
       <div id="itemsContainer"></div>
-
       <button class="add-btn" onclick="addItem()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         新增品項
       </button>
     </div>
-
-    <!-- 備註 -->
     <div class="card">
       <div class="card-title">備註（選填）</div>
-      <textarea id="notes" placeholder="例：小番茄下週供應量會增加、本週有特殊規格歡迎詢問…"></textarea>
+      <textarea id="notes" placeholder="例：小番茄下週供應量會增加、菜豆快要結束了…"></textarea>
     </div>
-
-    <!-- Submit -->
     <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
       送出登記
     </button>
     <div class="error-msg" id="errorMsg"></div>
   </div>
-
-  <!-- Success state -->
   <div class="success-box" id="successBox">
     <span class="big-check">✅</span>
     <h2>登記成功！</h2>
     <p id="successDetail"></p>
+    <p id="successMsg">我們會努力幫您用心的成果找到適合的餐桌。</p>
     <button class="re-btn" onclick="resetForm()">再填一次</button>
   </div>
-
-  <!-- Setup instructions -->
-  <div id="setup-section" class="card" style="margin-top:1.5rem; background:#fafaf7;">
-    <div class="card-title" style="color:var(--amber-400)">⚙️ Google 試算表設定說明</div>
-    <ol style="font-size:13px; color:var(--gray-600); line-height:1.9; padding-left:1.2rem;">
-      <li>開啟 <a href="https://sheets.new" target="_blank" style="color:var(--green-600); font-weight:600">sheets.new</a> 建立新試算表</li>
-      <li>在第一列填入欄位（可直接複製）：<br>
-        <code style="background:#eee; padding:3px 7px; border-radius:5px; font-size:12px; display:inline-block; margin-top:4px; line-height:1.8; word-break:break-all;">時間戳記	姓名	電話	農場	週次	認證	品名	數量	單位	單價	備註</code>
-      </li>
-      <li>點「延伸功能 → Apps Script」，貼上 <strong>apps_script.gs</strong> 的程式碼</li>
-      <li>點「部署 → 新增部署」→ 類型選「網路應用程式」→ 執行身分「我」→ 存取「所有人」</li>
-      <li>複製部署網址，填入下方欄位</li>
-    </ol>
-    <div class="field" style="margin-top:12px">
-      <label style="font-weight:600; color:var(--gray-800)">Apps Script 部署網址</label>
-      <input type="text" id="webhookUrl" placeholder="https://script.google.com/macros/s/…/exec"
-        style="font-size:13px;"
-        oninput="saveWebhook(this.value)" />
-    </div>
-    <p style="font-size:12px; color:var(--gray-400); margin-top:6px;">此設定儲存在您的瀏覽器，不會上傳。</p>
-  </div>
-
-  <div class="footer">農產品供應登記系統 · 感謝農友填寫</div>
+  <div class="footer">農二菜車的農產品供應登記系統 · 感謝您撥空填寫</div>  
 </div>
-
 <script>
-// ─── Webhook ───────────────────────────────────────────────
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxPUIaq_zAms9YQ5XhckQZTE_qGLP5uPEdG4axgNbh192T1dcupiqEnaltChOvpFcXy/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz8WCUgR5tAitSG1qlWwVbHnHm5rDTvdK8z88MFeeny-K3EKfF5p6AF_uPI3iy_fXAX/exec';
 
-// ─── Week default ─────────────────────────────────────────
-(function(){
-  const d = new Date();
-  const yr = d.getFullYear();
-  const start = new Date(yr,0,1);
-  const wk = Math.ceil(((d - start)/864e5 + start.getDay()+1)/7);
-  document.getElementById('weekDate').value = `${yr}-W${String(wk).padStart(2,'0')}`;
-})();
+function getWeekOfMonth(dateStr) {
+  const d = new Date(dateStr);
+  const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+  // 取得月份第 1 天是星期幾（週一為起始，調整 Sunday=0 的問題）
+  const firstDayOfWeek = firstDay.getDay();
+  const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+  return Math.ceil((d.getDate() + offset) / 7);
+}
 
-// ─── Items ────────────────────────────────────────────────
+function formatDate(val) {
+  const [year, month] = val.split('-');
+  const week = getWeekOfMonth(val);
+  return `${year}-${month}-第${week}週`;
+}
+
 let items = [];
 let nid = 1;
 const UNITS = ['公斤','台斤','顆','束','盒','袋','打','斤','份'];
@@ -407,18 +315,12 @@ function esc(s){ return String(s||'').replace(/"/g,'&quot;'); }
 
 addItem(); addItem();
 
-// ─── Submit ───────────────────────────────────────────────
 async function handleSubmit(){
-  const name=document.getElementById('farmerName').value.trim();
-  if(!name){ showErr('請填寫農夫姓名'); document.getElementById('farmerName').focus(); return; }
+  const name=document.getElementById('register').value.trim();
+  const farm=document.getElementById('farmerFarm').value.trim();
+  if(!farm){ showErr('請填寫農場 / 產地'); document.getElementById('farmerFarm').focus(); return; }
   const valid=items.filter(i=>i.name&&i.qty&&i.price);
   if(!valid.length){ showErr('請至少填寫一項農產品（品名、數量、單價都要填）'); return; }
-
-  if(!WEBHOOK_URL){
-    showErr('尚未設定 Google 試算表連結，請在下方填入 Apps Script 部署網址後再試。');
-    document.getElementById('setup-section').scrollIntoView({behavior:'smooth'});
-    return;
-  }
 
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;
@@ -428,18 +330,16 @@ async function handleSubmit(){
   const ts=new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
   const rows=valid.map(i=>({
     時間戳記:ts,
-    姓名:name,
-    電話:document.getElementById('farmerPhone').value.trim(),
+    登記人:name,
     農場:document.getElementById('farmerFarm').value.trim(),
-    週次:document.getElementById('weekDate').value,
-    認證:document.getElementById('certification').value,
+    週次:formatDate(document.getElementById('weekDate').value),
     品名:i.name,
     數量:i.qty,
     單位:i.unit,
     單價:i.price,
     備註:document.getElementById('notes').value.trim()
   }));
-
+  console.log('rows', rows);
   try{
     await fetch(WEBHOOK_URL,{
       method:'POST',
@@ -447,31 +347,29 @@ async function handleSubmit(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({rows})
     });
-    showSuccess(name, valid);
+    hideErr();
+    showSuccess(farm, name, valid);
   }catch(e){
+     console.error("An error occurred:", e);
     showErr('連線失敗，請確認網路或 Apps Script 網址是否正確。');
     btn.disabled=false;
     btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
   }
 }
 
-function showSuccess(name, valid){
+function showSuccess(farm, name, valid){
   document.getElementById('formSection').style.display='none';
   const box=document.getElementById('successBox');
   box.style.display='block';
   box.scrollIntoView({behavior:'smooth',block:'start'});
   document.getElementById('successDetail').textContent=
-    `${name} 共登記 ${valid.length} 項農產品：${valid.map(i=>i.name).join('、')}。資料已寫入 Google 試算表。`;
+    `${farm||name||'農場'} 共登記 ${valid.length} 項農產品：${valid.map(i=>i.name).join('、')}。`;
 }
 
 function resetForm(){
   document.getElementById('formSection').style.display='block';
   document.getElementById('successBox').style.display='none';
-  document.getElementById('farmerName').value='';
-  document.getElementById('farmerPhone').value='';
-  document.getElementById('farmerFarm').value='';
   document.getElementById('notes').value='';
-  document.getElementById('certification').value='';
   const btn=document.getElementById('submitBtn');
   btn.disabled=false;
   btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
