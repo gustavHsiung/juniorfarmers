@@ -1,0 +1,16 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Google Apps Script / clasp specifics
+# Keep your deployment IDs private if multiple people use different scripts
+# .clasp.json
+
+# Node dependencies (if using npm for clasp or TypeScript)
+node_modules/
+npm-debug.log*
+
+# Local environment variables / credentials
+.env
+*.secret
