@@ -366,19 +366,6 @@
   }
   .fetch-btn:hover { background: var(--green-800); }
   .fetch-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-  .refresh-text-btn {
-    background: none;
-    border: none;
-    color: var(--gray-400);
-    font-size: 12px;
-    font-family: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 4px 0;
-    transition: color 0.15s;
-  }
-  .refresh-text-btn:hover { color: var(--green-600); }
-  .refresh-text-btn.spinning { color: var(--gray-400); cursor: wait; }
   .week-quick-select {
     display: flex;
     gap: 6px;
@@ -398,7 +385,20 @@
   }
   .week-chip:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
   .week-chip.active { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); font-weight: 600; }
-
+  .refresh-text-btn {
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px 0;
+    margin-top: 6px;
+    transition: color 0.15s;
+  }
+  .refresh-text-btn:hover { color: var(--green-600); }
+  .refresh-text-btn.spinning { color: var(--gray-400); cursor: wait; }
   .browse-empty {
     text-align: center;
     padding: 2.5rem 1rem;
@@ -596,7 +596,7 @@
         <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
         <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
-      瀏覽資料
+      瀏覽
     </button>
   </div>
 </div>
@@ -670,8 +670,10 @@
         </button>
       </div>
       <!-- Quick week chips loaded from API -->
-      <div class="week-quick-select" id="weekChips"></div>
-      <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理週次清單</button>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="week-quick-select" id="weekChips"></div>
+        <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理週次清單</button>
+      </div>
     </div>
 
     <div class="browse-spinner-wrap" id="browseSpinner">
@@ -1037,17 +1039,17 @@ function renderBrowseResults(weekStr, rows) {
       const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
       const price = r['基本進貨價'] ? `<span class="price-pill">$${esc(r['基本進貨價'])}</span>` : '—';
       // 進貨 + 批價 同一格
-      let purchaseHtml = r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—';
-      if (r['批價']) {
-        let wText = `批價 $${esc(r['批價'])}`;
-        if (r['批價門檻']) wText += ` / ${esc(r['批價門檻'])} ${esc(r['單位']||'')} 起`;
-        purchaseHtml += `<div style="margin-top:4px"><span class="wholesale-pill">${wText}</span></div>`;
-      }
+      const purchaseHtml = `
+        <div style="margin-bottom:4px">${r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—'}</div>
+        <div>${r['批價']
+          ? `<span class="wholesale-pill">批價 $${esc(r['批價'])}${r['批價門檻'] ? ` / ${esc(r['批價門檻'])} ${esc(r['單位']||'')} 起` : ''}</span>`
+          : '<span style="color:var(--gray-400)">—</span>'
+        }</div>
+      `;
 
-      // 零售單獨一格
       const retailHtml = r['末端建議售價']
         ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
-        : '—';
+        : '<span style="color:var(--gray-400)">—</span>';
       const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
 
       html += `<tr>
