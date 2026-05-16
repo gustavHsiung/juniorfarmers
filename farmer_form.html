@@ -366,7 +366,19 @@
   }
   .fetch-btn:hover { background: var(--green-800); }
   .fetch-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-
+  .refresh-text-btn {
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px 0;
+    transition: color 0.15s;
+  }
+  .refresh-text-btn:hover { color: var(--green-600); }
+  .refresh-text-btn.spinning { color: var(--gray-400); cursor: wait; }
   .week-quick-select {
     display: flex;
     gap: 6px;
@@ -490,6 +502,16 @@
     color: #7a5010;
     font-weight: 500;
   }
+  .wholesale-pill {
+    display: inline-block;
+    background: #FFF4E0;
+    border: 1px solid #E8C060;
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: #A0600A;
+    font-weight: 600;
+  }
   .wholesale-wrap {
     font-size: 11px;
     color: var(--gray-400);
@@ -517,8 +539,8 @@
     .item-extras-grid { grid-template-columns: 1fr 1fr; }
     .browse-controls { flex-direction: column; align-items: stretch; }
     .fetch-btn { width: 100%; justify-content: center; }
-    .browse-table th:nth-child(4),
-    .browse-table td:nth-child(4) { display: none; }
+    /*.browse-table th:nth-child(4),
+    .browse-table td:nth-child(4) { display: none; }*/
   }
 </style>
 </head>
@@ -649,6 +671,7 @@
       </div>
       <!-- Quick week chips loaded from API -->
       <div class="week-quick-select" id="weekChips"></div>
+      <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理週次清單</button>
     </div>
 
     <div class="browse-spinner-wrap" id="browseSpinner">
@@ -667,8 +690,9 @@
 </div>
 
 <script>
-const FORM_VERSION = 'v0.9.2';
+const FORM_VERSION = 'v0.9.4';
 let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
+let weekChipsLoaded = false;
 
 document.getElementById('headerTitle').textContent = `菜車供應登記 ${FORM_VERSION}`;
 document.getElementById('settingsVersion').textContent = FORM_VERSION;
@@ -707,7 +731,14 @@ function switchTab(tab) {
   document.getElementById('panelBrowse').style.display  = tab === 'browse'   ? '' : 'none';
   document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
   document.getElementById('tabBrowse').classList.toggle('active', tab === 'browse');
-  if (tab === 'browse') loadWeekChips();
+  if (tab === 'browse') {
+    if (!document.getElementById('browseWeekDate').value)
+      document.getElementById('browseWeekDate').value = getNearestMonday();
+    if (!weekChipsLoaded) {
+      loadWeekChips();
+      weekChipsLoaded = true;
+    }
+  }
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -857,14 +888,38 @@ let availableWeeks = [];
 
 async function loadWeekChips() {
   if (!WEBHOOK_URL) return;
+  const chips = document.getElementById('weekChips');
+  const refreshBtn = document.getElementById('refreshBtn');
+  
+  chips.innerHTML = '<span style="font-size:12px; color:var(--gray-400);">載入週次清單中…</span>';
+  refreshBtn.style.display = 'none';
+  
   try {
-    const res = await fetch(`${WEBHOOK_URL}`, { method: 'GET' });
+    const res = await fetch(WEBHOOK_URL);
     const data = await res.json();
     if (data.weeks && data.weeks.length) {
       availableWeeks = data.weeks;
       renderWeekChips();
+    } else {
+      chips.innerHTML = '<span style="font-size:12px; color:var(--gray-400);">尚無資料</span>';
     }
-  } catch(e) { /* silent — chips are optional */ }
+  } catch(e) {
+    chips.innerHTML = '<span style="font-size:12px; color:var(--red-400);">載入失敗</span>';
+  }
+  
+  refreshBtn.style.display = 'block';
+}
+
+function getNearestMonday() {
+  const today = new Date();
+  const day = today.getDay(); // 0=日, 1=一, ..., 6=六
+  let diff;
+  if (day === 0) diff = 1;       // 週日 → 下週一
+  else if (day === 6) diff = 2;  // 週六 → 下週一
+  else diff = -(day - 1);        // 週一~五 → 上週一（週一本身是 0）
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  return monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
 }
 
 function renderWeekChips() {
@@ -884,6 +939,15 @@ function selectWeekChip(weekStr) {
     c.classList.toggle('active', c.textContent.trim() === weekStr);
   });
   fetchBrowseDataForWeek(weekStr);
+}
+
+async function refreshWeekChips() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  weekChipsLoaded = false;
+  await loadWeekChips();
+  weekChipsLoaded = true;
+  btn.classList.remove('spinning');
 }
 
 async function fetchBrowseData() {
@@ -916,6 +980,7 @@ async function fetchBrowseDataForWeek(weekStr) {
     }
     renderBrowseResults(weekStr, data.rows);
   } catch(e) {
+    console.error('fetchBrowseDataForWeek', e);
     spinner.style.display = 'none';
     results.innerHTML = `<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定</div>`;
   }
@@ -962,29 +1027,34 @@ function renderBrowseResults(weekStr, rows) {
         <tr>
           <th>品名</th>
           <th>數量</th>
-          <th>進貨價</th>
-          <th>批 / 零售</th>
+          <th>進貨 / 批價</th>
+          <th>建議零售</th>
         </tr>
       </thead>
       <tbody>`;
-
+    
     farmRows.forEach(r => {
       const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
       const price = r['基本進貨價'] ? `<span class="price-pill">$${esc(r['基本進貨價'])}</span>` : '—';
-      let pricingHtml = '';
-      if (r['末端建議售價']) pricingHtml += `<span class="retail-pill">零售 $${esc(r['末端建議售價'])}</span> `;
+      // 進貨 + 批價 同一格
+      let purchaseHtml = r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—';
       if (r['批價']) {
-        pricingHtml += `<div class="wholesale-wrap">批價 $${esc(r['批價'])}`;
-        if (r['批價門檻']) pricingHtml += `（起訂 ${esc(r['批價門檻'])}）`;
-        pricingHtml += '</div>';
+        let wText = `批價 $${esc(r['批價'])}`;
+        if (r['批價門檻']) wText += ` / ${esc(r['批價門檻'])} ${esc(r['單位']||'')} 起`;
+        purchaseHtml += `<div style="margin-top:4px"><span class="wholesale-pill">${wText}</span></div>`;
       }
+
+      // 零售單獨一格
+      const retailHtml = r['末端建議售價']
+        ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
+        : '—';
       const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
 
       html += `<tr>
         <td>${esc(r['品名']||'')}${itemNote}</td>
         <td>${qty}</td>
-        <td>${price}</td>
-        <td>${pricingHtml || '—'}</td>
+        <td>${purchaseHtml}</td>
+        <td>${retailHtml}</td>
       </tr>`;
     });
 
