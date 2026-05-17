@@ -385,6 +385,7 @@
   }
   .week-chip:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
   .week-chip.active { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); font-weight: 600; }
+  .chips-hint { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
   .refresh-text-btn {
     background: none;
     border: none;
@@ -671,6 +672,7 @@
       </div>
       <!-- Quick week chips loaded from API -->
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="chips-hint" id="chipsHint"></div>
         <div class="week-quick-select" id="weekChips"></div>
         <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理週次清單</button>
       </div>
@@ -680,7 +682,7 @@
       <div class="browse-spinner"></div>
     </div>
 
-    <div id="browseResults">
+    <div id="searchResults">
       <div class="browse-empty">
         <span class="empty-icon">🌱</span>
         請選擇週次後按「查詢」
@@ -743,7 +745,8 @@ function switchTab(tab) {
   }
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Utilities ──────────────────────────────────────────────
+
 function getWeekOfMonth(dateStr) {
   const d = new Date(dateStr);
   const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -755,6 +758,18 @@ function formatDate(val) {
   const [year, month] = val.split('-');
   const week = getWeekOfMonth(val);
   return `${year}-${month}-第${week}週`;
+}
+function weekStrToDate(weekStr) {
+  // "2025-05-第2週" → "2025-05-06" (approximate Monday of that week)
+  const m = weekStr.match(/^(\d{4})-(\d{2})-第(\d+)週$/);
+  if (!m) return '';
+  const year = parseInt(m[1]), month = parseInt(m[2]) - 1, weekNum = parseInt(m[3]);
+  const firstDay = new Date(year, month, 1);
+  const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+  let day = (weekNum - 1) * 7 - offset + 1;
+  if (day < 1) day = 1;
+  const d = new Date(year, month, day);
+  return d.toISOString().slice(0, 10);
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -888,6 +903,10 @@ function hideErr() { document.getElementById('errorMsg').style.display='none'; }
 // ── Browse tab ─────────────────────────────────────────────────────────────
 let availableWeeks = [];
 
+let selectedWeeks = new Set();
+let searchResultsGrouped = {};
+let weeksLoaded = false;
+
 async function loadWeekChips() {
   if (!WEBHOOK_URL) return;
   const chips = document.getElementById('weekChips');
@@ -897,15 +916,15 @@ async function loadWeekChips() {
   refreshBtn.style.display = 'none';
   
   try {
-    const res = await fetch(WEBHOOK_URL);
+    const res = await fetch(WEBHOOK_URL + '?action=weeks');
     const data = await res.json();
-    if (data.weeks && data.weeks.length) {
-      availableWeeks = data.weeks;
-      renderWeekChips();
-    } else {
-      chips.innerHTML = '<span style="font-size:12px; color:var(--gray-400);">尚無資料</span>';
-    }
+
+    weeksLoaded = true;
+
+    renderWeekChips(data.weeks || []);
+
   } catch(e) {
+    console.error('loadWeekChips', e)
     chips.innerHTML = '<span style="font-size:12px; color:var(--red-400);">載入失敗</span>';
   }
   
@@ -924,15 +943,38 @@ function getNearestMonday() {
   return monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
 }
 
-function renderWeekChips() {
+function renderWeekChips(weeks) {
   const container = document.getElementById('weekChips');
-  const currentVal = document.getElementById('browseWeekDate').value;
-  const currentWeek = currentVal ? formatDate(currentVal) : '';
-  container.innerHTML = availableWeeks.map(w =>
-    `<button class="week-chip${w===currentWeek?' active':''}" onclick="selectWeekChip('${w}')">${w}</button>`
-  ).join('');
+  if (!weeks.length) {
+    container.innerHTML = '<span style="color:var(--gray-400);font-size:13px;">目前尚無任何登記資料</span>';
+    return;
+  }
+  container.innerHTML = '';
+  weeks.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'week-chip';
+    btn.textContent = w;
+    btn.onclick = () => {
+      if (selectedWeeks.has(w)) {
+        selectedWeeks.delete(w);
+        btn.classList.remove('selected');
+      } else {
+        selectedWeeks.add(w);
+        btn.classList.add('selected');
+      }
+      updateChipsHint();
+    };
+    container.appendChild(btn);
+  });
+  document.getElementById('chipsHint').textContent = '可選擇多個週次一起查詢';
 }
 
+function updateChipsHint() {
+  const n = selectedWeeks.size;
+  document.getElementById('chipsHint').textContent =
+    n === 0 ? '可選擇多個週次一起查詢' : `已選 ${n} 個週次`;
+}
+ 
 function selectWeekChip(weekStr) {
   // weekStr format: "2025-05-第3週" — sync back to date picker as best-effort display
   document.getElementById('browseWeekDate').value = '';
@@ -967,20 +1009,18 @@ async function fetchBrowseDataForWeek(weekStr) {
   if (!WEBHOOK_URL) { setBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
 
   const spinner = document.getElementById('browseSpinner');
-  const results = document.getElementById('browseResults');
+  const results = document.getElementById('searchResults');
   spinner.style.display = 'block';
   results.innerHTML = '';
 
   try {
-    const res = await fetch(`${WEBHOOK_URL}?week=${encodeURIComponent(weekStr)}`);
+    const weeksParam = Array.from(selectedWeeks).join(',');
+    const url = WEBHOOK_URL + '?action=query' + (weeksParam ? '&weeks=' + encodeURIComponent(weeksParam) : '');
+    const res = await fetch(url);
     const data = await res.json();
     spinner.style.display = 'none';
 
-    if (!data.rows || data.rows.length === 0) {
-      results.innerHTML = `<div class="browse-empty"><span class="empty-icon">🌾</span>「${weekStr}」尚無登記資料</div>`;
-      return;
-    }
-    renderBrowseResults(weekStr, data.rows);
+    renderSearchResults(data.data || []);
   } catch(e) {
     console.error('fetchBrowseDataForWeek', e);
     spinner.style.display = 'none';
@@ -988,8 +1028,13 @@ async function fetchBrowseDataForWeek(weekStr) {
   }
 }
 
-function renderBrowseResults(weekStr, rows) {
-  const results = document.getElementById('browseResults');
+function renderSearchResults(rows) {
+  const container = document.getElementById('searchResults');
+
+  if (!rows.length) {
+    container.innerHTML = '<div class="no-results">查無符合條件的登記資料</div>';
+    return;
+  }
 
   // Group by farm
   const farmMap = {};
@@ -1063,7 +1108,7 @@ function renderBrowseResults(weekStr, rows) {
     html += `</tbody></table></div>`;
   });
 
-  results.innerHTML = html;
+  container.innerHTML = html;
 }
 
 function setBrowseMsg(msg) {
