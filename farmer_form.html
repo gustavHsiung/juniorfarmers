@@ -597,6 +597,50 @@
     /*.browse-table th:nth-child(4),
     .browse-table td:nth-child(4) { display: none; }*/
   }
+
+  /* ── Order Input Tab ── */
+  .order-shop-group { margin-bottom: 14px; }
+  .order-shop-header {
+    font-size: 13px; font-weight: 600;
+    color: var(--green-800);
+    background: var(--green-50);
+    border: 1px solid var(--green-100);
+    border-radius: 8px 8px 0 0;
+    padding: 8px 12px;
+  }
+  .order-preview-table {
+    width: 100%; border-collapse: collapse;
+    border: 1px solid var(--green-100); border-top: none;
+    border-radius: 0 0 8px 8px; overflow: hidden;
+  }
+  .order-preview-table th {
+    font-size: 11px; color: var(--gray-400); font-weight: 500;
+    padding: 6px 8px; text-align: left;
+    background: var(--gray-50); border-bottom: 1px solid var(--gray-100);
+  }
+  .order-preview-table td {
+    padding: 5px 6px; border-bottom: 1px solid #f0ede5; vertical-align: middle;
+  }
+  .order-preview-table tr:last-child td { border-bottom: none; }
+  .order-preview-table input[type=text] { width: 100%; min-width: 80px; }
+  .order-preview-table input[type=number] { width: 68px; }
+  .order-preview-table select { padding-right: 24px; }
+  .order-del-btn {
+    background: none; border: none; color: var(--gray-400);
+    cursor: pointer; font-size: 18px; line-height: 1;
+    padding: 2px 6px; border-radius: 4px; transition: color 0.15s;
+  }
+  .order-del-btn:hover { color: var(--red-400); }
+  .parse-btn {
+    width: 100%; padding: 11px;
+    background: var(--green-400); color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+    transition: background 0.15s; margin-top: 10px;
+  }
+  .parse-btn:hover { background: var(--green-600); }
 </style>
 </head>
 <body>
@@ -652,6 +696,12 @@
         <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
       瀏覽
+    </button>
+    <button class="tab-btn" id="tabOrder" onclick="switchTab('order')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      訂單輸入
     </button>
   </div>
 </div>
@@ -744,11 +794,64 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════ ORDER TAB ═══════════════════════════════════ -->
+  <div id="panelOrder" style="display:none">
+    <div id="orderFormSection">
+      <div class="card">
+        <div class="card-title">基本資料</div>
+        <div class="row2">
+          <div class="field">
+            <label>登記人</label>
+            <input type="text" id="orderRegister" placeholder="例：游大海" />
+          </div>
+          <div class="field">
+            <label>週次（選擇週一日期）</label>
+            <input type="date" id="orderWeekDate" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">貼上 LINE 訂單訊息</div>
+        <div class="field">
+          <textarea id="lineMsg" rows="12"
+            placeholder="貼上 LINE 訊息，例：&#10;恰比兔子&#10;綠火焰/2斤&#10;龍葵2斤&#10;&#10;雲舍&#10;紅蘿蔔 +2包&#10;青蔥 +2把"></textarea>
+        </div>
+        <button class="parse-btn" onclick="parseAndPreview()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          解析訊息
+        </button>
+      </div>
+
+      <div id="orderPreviewSection" style="display:none">
+        <div class="card">
+          <div class="card-title">解析預覽 <span id="orderPreviewCount" style="font-size:11px;color:var(--gray-400);font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
+          <div id="orderPreviewContent"></div>
+        </div>
+        <button class="submit-btn" id="orderSubmitBtn" onclick="submitOrder()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+          送出訂單
+        </button>
+        <div class="error-msg" id="orderErrorMsg"></div>
+      </div>
+    </div>
+
+    <div class="success-box" id="orderSuccessBox" style="display:none">
+      <span class="big-check">✅</span>
+      <h2>訂單登記成功！</h2>
+      <p id="orderSuccessDetail"></p>
+      <p>資料已寫入 Google Sheet。</p>
+      <button class="re-btn" onclick="resetOrder()">再填一次</button>
+    </div>
+  </div>
+
   <div class="footer">農二菜車的農產品供應登記系統 · 感謝您的使用</div>
 </div>
 
 <script>
-const FORM_VERSION = 'v0.9.6';
+const FORM_VERSION = 'v0.9.8';
 let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
 let weekChipsLoaded = false;
 
@@ -787,8 +890,10 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('panelRegister').style.display = tab === 'register' ? '' : 'none';
   document.getElementById('panelBrowse').style.display  = tab === 'browse'   ? '' : 'none';
+  document.getElementById('panelOrder').style.display   = tab === 'order'    ? '' : 'none';
   document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
   document.getElementById('tabBrowse').classList.toggle('active', tab === 'browse');
+  document.getElementById('tabOrder').classList.toggle('active', tab === 'order');
   if (tab === 'browse') {
     if (!document.getElementById('browseWeekDate').value)
       document.getElementById('browseWeekDate').value = getNearestMonday();
@@ -830,7 +935,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot
 // ── Registration form ──────────────────────────────────────────────────────
 let items = [];
 let nid = 1;
-const UNITS = ['公斤','台斤','顆','束','盒','袋','打','斤','份'];
+const UNITS = ['公斤','台斤','斤','顆','支','把','包','束','盒','袋','條','個','粒','份','打'];
 
 function addItem(n='',q='',u='公斤',p='',wp='',wt='',rp='',note='') {
   items.push({id:nid++,name:n,qty:q,unit:u,price:p,wholesalePrice:wp,wholesaleThreshold:wt,retailPrice:rp,itemNote:note});
@@ -1305,6 +1410,151 @@ async function saveRow(sid, rowIdx) {
 function setBrowseMsg(msg) {
   document.getElementById('browseResults').innerHTML =
     `<div class="browse-empty"><span class="empty-icon">🌶️</span>${msg}</div>`;
+}
+
+// ── Order Input (LINE message parsing) ────────────────────────────────────────
+const CN_NUM_MAP = {'半':0.5,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+let parsedOrders = [];
+let orderNid = 1;
+
+function parseLineMessage(text) {
+  const unitPat = UNITS.join('|');
+  // 不加 $ — 允許結尾有價格或備注，例如「1斤140元」「3支（明天秤）」
+  const itemRe = new RegExp('^(.+?)\\s*[/+]?\\s*([半一二三四五六七八九十\\d.]+)('+unitPat+')');
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const results = [];
+  let currentShop = '';
+  for (const line of lines) {
+    const m = itemRe.exec(line);
+    if (m) {
+      const name = m[1].trim();
+      const qtyStr = m[2];
+      const unit = m[3];
+      const qty = /^[\d.]+$/.test(qtyStr) ? parseFloat(qtyStr) : (CN_NUM_MAP[qtyStr] || 1);
+      results.push({ id: orderNid++, shop: currentShop, name, qty, unit });
+    } else if (currentShop && /\d/.test(line)) {
+      // 有數字但沒找到有效單位（如「紅蘿蔔300元」）—當品項，數量/單位留空讓使用者補
+      results.push({ id: orderNid++, shop: currentShop, name: line, qty: '', unit: '' });
+    } else {
+      currentShop = line;
+    }
+  }
+  return results;
+}
+
+function updateOrderItem(id, field, value) {
+  const item = parsedOrders.find(o => o.id === id);
+  if (item) item[field] = value;
+}
+
+function removeOrderItem(id) {
+  parsedOrders = parsedOrders.filter(o => o.id !== id);
+  renderOrderPreview();
+}
+
+function parseAndPreview() {
+  const text = document.getElementById('lineMsg').value;
+  if (!text.trim()) { showOrderErr('請先貼上 LINE 訊息'); return; }
+  parsedOrders = parseLineMessage(text);
+  if (!parsedOrders.length) {
+    showOrderErr('無法解析到任何品項。格式範例：「龍葵2斤」或「紅蘿蔔 +2包」');
+    return;
+  }
+  clearOrderErr();
+  renderOrderPreview();
+  document.getElementById('orderPreviewSection').style.display = '';
+  document.getElementById('orderPreviewSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderOrderPreview() {
+  const shops = [...new Set(parsedOrders.map(o => o.shop))];
+  document.getElementById('orderPreviewCount').textContent =
+    `（${parsedOrders.length} 筆 · ${shops.length} 個店家）`;
+  let html = '';
+  shops.forEach(shop => {
+    const items = parsedOrders.filter(o => o.shop === shop);
+    const unitOpts = u => UNITS.map(u2 => `<option${u2===u?' selected':''}>${u2}</option>`).join('');
+    html += `<div class="order-shop-group">
+      <div class="order-shop-header">${esc(shop || '（未指定店家）')}</div>
+      <table class="order-preview-table">
+        <thead><tr><th>品名</th><th>數量</th><th>單位</th><th></th></tr></thead>
+        <tbody>`;
+    items.forEach(o => {
+      html += `<tr>
+        <td><input type="text" value="${esc(o.name)}"
+          oninput="updateOrderItem(${o.id},'name',this.value)" /></td>
+        <td><input type="number" value="${o.qty}" min="0" step="0.5"
+          oninput="updateOrderItem(${o.id},'qty',parseFloat(this.value)||0)" /></td>
+        <td><select onchange="updateOrderItem(${o.id},'unit',this.value)">${unitOpts(o.unit)}</select></td>
+        <td><button class="order-del-btn" onclick="removeOrderItem(${o.id})">×</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+  document.getElementById('orderPreviewContent').innerHTML = html;
+}
+
+async function submitOrder() {
+  if (!WEBHOOK_URL) { showOrderErr('請先在右上角設定中填入 Webhook 網址。'); return; }
+  const registrant = document.getElementById('orderRegister').value.trim();
+  const weekDate   = document.getElementById('orderWeekDate').value;
+  if (!weekDate) { showOrderErr('請填寫週次'); document.getElementById('orderWeekDate').focus(); return; }
+  if (!parsedOrders.length) { showOrderErr('沒有可送出的品項'); return; }
+
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 送出中…';
+  clearOrderErr();
+
+  const ts = new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei'});
+  const weekStr = formatDate(weekDate);
+  const rows = parsedOrders.map(o => ({
+    時間戳記: ts, 登記人: registrant, 店家料理人: o.shop,
+    週次: weekStr, 品名: o.name, 數量: o.qty, 單位: o.unit,
+    單價: '', 交易總價: '', 送貨地點: '', 送貨時間: '', 付款狀態: '', 備註: '',
+  }));
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain'},
+      body: JSON.stringify({action:'order', rows}),
+    });
+    const result = await res.json();
+    if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
+    clearOrderErr();
+    document.getElementById('orderFormSection').style.display = 'none';
+    const box = document.getElementById('orderSuccessBox');
+    box.style.display = 'block';
+    box.scrollIntoView({behavior:'smooth', block:'start'});
+    const shops = [...new Set(parsedOrders.map(o => o.shop))].filter(Boolean);
+    document.getElementById('orderSuccessDetail').textContent =
+      `共 ${parsedOrders.length} 筆，${shops.length} 個店家：${shops.join('、')}。`;
+  } catch(e) {
+    showOrderErr(`連線失敗：${e.message}`);
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
+  }
+}
+
+function resetOrder() {
+  document.getElementById('orderFormSection').style.display = '';
+  document.getElementById('orderSuccessBox').style.display = 'none';
+  document.getElementById('lineMsg').value = '';
+  document.getElementById('orderPreviewSection').style.display = 'none';
+  parsedOrders = [];
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
+}
+
+function showOrderErr(msg) {
+  const e = document.getElementById('orderErrorMsg');
+  e.style.display = 'block'; e.textContent = msg;
+  e.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function clearOrderErr() {
+  document.getElementById('orderErrorMsg').style.display = 'none';
 }
 </script>
 </body>
