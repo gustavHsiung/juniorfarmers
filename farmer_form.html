@@ -420,6 +420,20 @@
 
   <!-- ═══ REGISTER TAB ═══ -->
   <div id="panelRegister">
+
+    <!-- Farm sub-tabs -->
+    <div class="browse-subtab-bar">
+      <button class="browse-subtab active" id="farmSubTabRegister" onclick="switchFarmSubTab('register')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v3H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M3 7.5h7M3 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        登記
+      </button>
+      <button class="browse-subtab" id="farmSubTabBrowse" onclick="switchFarmSubTab('browse')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        瀏覽與修改
+      </button>
+    </div>
+
+    <div id="farmSubPanelRegister">
     <div id="formSection">
       <div class="card">
         <div class="card-title">基本資料</div>
@@ -465,10 +479,52 @@
       <p>我們會努力幫您用心的成果找到適合的餐桌。</p>
       <button class="re-btn" onclick="resetForm()">再填一次</button>
     </div>
+    </div><!-- /farmSubPanelRegister -->
+
+    <!-- 瀏覽與修改 sub-panel -->
+    <div id="farmSubPanelBrowse" style="display:none">
+      <div class="card">
+        <div class="card-title">選擇週次查詢</div>
+        <div class="browse-controls">
+          <div class="field">
+            <label for="browseWeekDate">可出貨週一日期</label>
+            <input type="date" id="browseWeekDate" />
+          </div>
+          <button class="fetch-btn" id="fetchBtn" onclick="fetchBrowseData()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            查詢
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="chips-hint" id="chipsHint"></div>
+          <div class="week-quick-select" id="weekChips"></div>
+          <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理</button>
+        </div>
+      </div>
+      <div class="browse-spinner-wrap" id="browseSpinner"><div class="browse-spinner"></div></div>
+      <div id="searchResults">
+        <div class="browse-empty"><span class="empty-icon">🌱</span>請選擇週次後按「查詢」</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ═══ ORDER TAB ═══ -->
   <div id="panelOrder" style="display:none">
+
+    <!-- Order sub-tabs -->
+    <div class="browse-subtab-bar">
+      <button class="browse-subtab order-tab active" id="orderSubTabEntry" onclick="switchOrderSubTab('entry')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v3H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M3 7.5h7M3 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        下單
+      </button>
+      <button class="browse-subtab order-tab" id="orderSubTabBrowse" onclick="switchOrderSubTab('browse')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        瀏覽與修改
+      </button>
+    </div>
+
+    <div id="orderSubPanelEntry">
     <div id="orderFormSection">
 
       <!-- Step 1: paste text -->
@@ -569,51 +625,10 @@
       <p id="orderSuccessDetail"></p>
       <button class="re-btn" onclick="resetOrderForm()">再填一次</button>
     </div>
-  </div>
+    </div><!-- /orderSubPanelEntry -->
 
-  <!-- ═══ BROWSE TAB ═══ -->
-  <div id="panelBrowse" style="display:none">
-
-    <!-- Sub-tabs -->
-    <div class="browse-subtab-bar">
-      <button class="browse-subtab active" id="subTabFarm" onclick="switchBrowseSubTab('farm')">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.2 2 3 4.2 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.8-2.2-5-5-5z" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="8" cy="7" r="1.5" fill="currentColor"/></svg>
-        農場供應
-      </button>
-      <button class="browse-subtab order-tab" id="subTabOrder" onclick="switchBrowseSubTab('order')">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        店家訂單
-      </button>
-    </div>
-
-    <!-- ── Farm supply browse ── -->
-    <div id="browsePanelFarm">
-      <div class="card">
-        <div class="card-title">選擇週次查詢</div>
-        <div class="browse-controls">
-          <div class="field">
-            <label for="browseWeekDate">可出貨週一日期</label>
-            <input type="date" id="browseWeekDate" />
-          </div>
-          <button class="fetch-btn" id="fetchBtn" onclick="fetchBrowseData()">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            查詢
-          </button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div class="chips-hint" id="chipsHint"></div>
-          <div class="week-quick-select" id="weekChips"></div>
-          <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理</button>
-        </div>
-      </div>
-      <div class="browse-spinner-wrap" id="browseSpinner"><div class="browse-spinner"></div></div>
-      <div id="searchResults">
-        <div class="browse-empty"><span class="empty-icon">🌱</span>請選擇週次後按「查詢」</div>
-      </div>
-    </div>
-
-    <!-- ── Order browse ── -->
-    <div id="browsePanelOrder" style="display:none">
+    <!-- 瀏覽與修改 sub-panel -->
+    <div id="orderSubPanelBrowse" style="display:none">
       <div class="card">
         <div class="card-title">選擇週次查詢訂單</div>
         <div class="browse-controls">
@@ -644,6 +659,11 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ═══ BROWSE TAB ═══ -->
+  <div id="panelBrowse" style="display:none">
+    <!-- 待新增內容 -->
   </div>
 
   <div class="footer">農二菜車的農產品供應登記系統 · 感謝您的使用</div>
@@ -689,7 +709,32 @@ function switchTab(tab) {
     document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? '' : 'none';
     document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
   });
-  if (tab === 'browse') {
+}
+
+// ── Order sub-tab switching ──────────────────────────────────
+let currentOrderSub = 'entry';
+function switchOrderSubTab(sub) {
+  currentOrderSub = sub;
+  document.getElementById('orderSubPanelEntry').style.display  = sub === 'entry'  ? '' : 'none';
+  document.getElementById('orderSubPanelBrowse').style.display = sub === 'browse' ? '' : 'none';
+  document.getElementById('orderSubTabEntry').classList.toggle('active', sub === 'entry');
+  document.getElementById('orderSubTabBrowse').classList.toggle('active', sub === 'browse');
+  if (sub === 'browse') {
+    if (!document.getElementById('orderBrowseWeekDate').value)
+      document.getElementById('orderBrowseWeekDate').value = getNearestMonday();
+    if (!orderWeekChipsLoaded) { loadOrderWeekChips(); orderWeekChipsLoaded = true; }
+  }
+}
+
+// ── Farm sub-tab switching ───────────────────────────────────
+let currentFarmSub = 'register';
+function switchFarmSubTab(sub) {
+  currentFarmSub = sub;
+  document.getElementById('farmSubPanelRegister').style.display = sub === 'register' ? '' : 'none';
+  document.getElementById('farmSubPanelBrowse').style.display   = sub === 'browse'   ? '' : 'none';
+  document.getElementById('farmSubTabRegister').classList.toggle('active', sub === 'register');
+  document.getElementById('farmSubTabBrowse').classList.toggle('active', sub === 'browse');
+  if (sub === 'browse') {
     if (!document.getElementById('browseWeekDate').value)
       document.getElementById('browseWeekDate').value = getNearestMonday();
     if (!weekChipsLoaded) { loadWeekChips(); weekChipsLoaded = true; }
@@ -1324,25 +1369,10 @@ async function saveRow(sid, rowIdx) {
 }
 
 // ════════════════════════════════════════════════════════════
-// ── BROWSE SUB-TABS ──────────────────────────────────────────
+// ── ORDER BROWSE STATE ───────────────────────────────────────
 // ════════════════════════════════════════════════════════════
-let currentBrowseSub = 'farm';
 let orderWeekChipsLoaded = false;
 let selectedOrderWeeks = new Set();
-
-function switchBrowseSubTab(sub) {
-  currentBrowseSub = sub;
-  document.getElementById('browsePanelFarm').style.display  = sub === 'farm'  ? '' : 'none';
-  document.getElementById('browsePanelOrder').style.display = sub === 'order' ? '' : 'none';
-  document.getElementById('subTabFarm').classList.toggle('active', sub === 'farm');
-  document.getElementById('subTabOrder').classList.toggle('active', sub === 'order');
-  if (sub === 'order' && !orderWeekChipsLoaded) {
-    loadOrderWeekChips();
-    orderWeekChipsLoaded = true;
-    if (!document.getElementById('orderBrowseWeekDate').value)
-      document.getElementById('orderBrowseWeekDate').value = getNearestMonday();
-  }
-}
 
 // ── Order week chips ─────────────────────────────────────────
 async function loadOrderWeekChips() {
