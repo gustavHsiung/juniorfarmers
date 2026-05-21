@@ -13,14 +13,15 @@
     --green-800: #27500A;
     --amber-50: #FAEEDA;
     --amber-400: #BA7517;
+    --red-50: #FBE8E8;
+    --red-400: #C94040;
+    --red-600: #A65252;
+    --red-800: #5A1A1A;
     --gray-50: #F1EFE8;
     --gray-100: #D3D1C7;
     --gray-400: #888780;
     --gray-600: #5F5E5A;
     --gray-800: #444441;
-    --red-50: #FCEBEB;
-    --red-400: #E24B4A;
-    --red-600: #A32D2D;
     --gray-off-white-warm: #E0DED6;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,7 +29,6 @@
     font-family: -apple-system, 'Noto Sans TC', 'PingFang TC', sans-serif;
     background: #f5f4ef;
     min-height: 100vh;
-    padding: 0;
   }
   .header {
     background: var(--green-800);
@@ -41,552 +41,309 @@
     display: flex; align-items: center; gap: 10px;
     position: relative;
   }
-  .header-icon {
-    width: auto;
-    height: 45px;  
-    margin: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .header h1 {
-    font-size: 17px; font-weight: 600;
-    color: #fff; letter-spacing: 0.02em;
-    flex: 1;
-  }
+  .header-icon { height: 45px; margin: 10px; display: flex; align-items: center; flex-shrink: 0; }
+  .header h1 { font-size: 17px; font-weight: 600; color: #fff; letter-spacing: 0.02em; flex: 1; }
   .settings-btn {
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.25);
     color: rgba(255,255,255,0.85);
-    width: 38px; height: 38px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-    flex-shrink: 0;
+    width: 38px; height: 38px; border-radius: 8px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s; flex-shrink: 0;
   }
   .settings-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
   .settings-btn.active { background: rgba(255,255,255,0.25); color: #fff; }
   .settings-panel {
-    display: none;
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
+    display: none; position: absolute;
+    top: calc(100% + 10px); right: 0;
     width: min(340px, calc(100vw - 32px));
-    background: #fff;
-    border: 1px solid #e2e0d8;
-    border-radius: 12px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.14);
-    padding: 16px;
-    z-index: 20;
+    background: #fff; border: 1px solid #e2e0d8;
+    border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+    padding: 16px; z-index: 20;
   }
   .settings-panel.open { display: block; }
-  .settings-panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .settings-panel-header .title {
-    font-size: 14px; font-weight: 600; color: var(--gray-800);
-  }
-  .settings-version {
-    font-size: 11px; color: var(--gray-400);
-    background: var(--gray-50);
-    border: 1px solid var(--gray-100);
-    border-radius: 5px;
-    padding: 2px 8px;
-  }
+  .settings-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .settings-panel-header .title { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+  .settings-version { font-size: 11px; color: var(--gray-400); background: var(--gray-50); border: 1px solid var(--gray-100); border-radius: 5px; padding: 2px 8px; }
   .settings-field { margin-bottom: 12px; }
-  .settings-field label {
-    display: block; font-size: 12px; color: var(--gray-600);
-    margin-bottom: 5px;
-  }
-  .settings-field input[type=text] {
-    width: 100%;
-    border: 1px solid #d8d6cc;
-    border-radius: 8px;
-    padding: 9px 11px;
-    font-size: 13px;
-    font-family: inherit;
-    color: #1a1a18;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .settings-field input[type=text]:focus {
-    border-color: var(--green-400);
-    box-shadow: 0 0 0 3px rgba(99,153,34,0.12);
-  }
-  .settings-field input[type=text]::placeholder { color: var(--gray-400); font-size: 12px; }
-  .settings-save-btn {
-    width: 100%;
-    padding: 9px;
-    background: var(--green-600); color: #fff;
-    border: none; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-    transition: background 0.15s;
-  }
+  .settings-field label { display: block; font-size: 12px; color: var(--gray-600); margin-bottom: 5px; }
+  .settings-field input[type=text] { width: 100%; border: 1px solid #d8d6cc; border-radius: 8px; padding: 9px 11px; font-size: 13px; font-family: inherit; color: #1a1a18; background: #fff; outline: none; transition: border-color 0.15s; }
+  .settings-field input[type=text]:focus { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(99,153,34,0.12); }
+  .settings-save-btn { width: 100%; padding: 9px; background: var(--green-600); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
   .settings-save-btn:hover { background: var(--green-800); }
 
-  /* ── Tab Navigation ── */
-  .tab-bar {
-    /*background: var(--green-800);
-    border-top: 1px solid rgba(255,255,255,0.1);*/
-  }
-  .tab-bar-inner {
-    max-width: 640px;
-    margin: 0 auto;
-    display: flex;
-  }
+  /* ── Tabs ── */
+  .tab-bar { }
+  .tab-bar-inner { max-width: 640px; margin: 0 auto; display: flex; }
   .tab-btn {
-    flex: 1;
-    padding: 10px 12px;
+    flex: 1; padding: 10px 8px;
     background: var(--green-600);
-    border: none;
     border: 1px solid transparent;
     border-top-color: var(--gray-50);
-    border-radius: 0  0 10px 10px;
+    border-radius: 0 0 10px 10px;
     color: rgba(255,255,255,0.6);
-    font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    cursor: pointer; transition: color 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
     letter-spacing: 0.02em;
   }
   .tab-btn:hover { color: rgba(255,255,255,0.85); }
   .tab-btn.active {
-    color: #fff;
-    background: var(--green-800);
+    color: #fff; background: var(--green-800);
     border-top-color: transparent;
     border-left-color: var(--gray-50);
     border-right-color: var(--gray-50);
     border-bottom-color: var(--gray-50);
-    
   }
 
-  .container {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 1.25rem 1rem 3rem;
-  }
-
-  .card {
-    background: #fff;
-    border: 1px solid #e2e0d8;
-    border-radius: 14px;
-    padding: 1.1rem 1.1rem;
-    margin-bottom: 1rem;
-  }
-  .card-title {
-    font-size: 11px; font-weight: 600;
-    color: var(--gray-400);
-    text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 12px;
-  }
+  .container { max-width: 640px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+  .card { background: #fff; border: 1px solid #e2e0d8; border-radius: 14px; padding: 1.1rem; margin-bottom: 1rem; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
   .field { margin-bottom: 11px; }
   .field:last-child { margin-bottom: 0; }
-  label {
-    display: block;
-    font-size: 13px; color: var(--gray-600);
-    margin-bottom: 5px;
+  label { display: block; font-size: 13px; color: var(--gray-600); margin-bottom: 5px; }
+  input[type=text], input[type=tel], input[type=date], input[type=number], select, textarea {
+    width: 100%; border: 1px solid #d8d6cc; border-radius: 8px;
+    padding: 10px 12px; font-size: 15px; font-family: inherit;
+    color: #1a1a18; background: #fff; outline: none;
+    transition: border-color 0.15s; -webkit-appearance: none;
   }
-  input[type=text], input[type=tel], input[type=week], input[type=date], input[type=number], select, textarea {
-    width: 100%;
-    border: 1px solid #d8d6cc;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 15px;
-    font-family: inherit;
-    color: #1a1a18;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--green-400);
-    box-shadow: 0 0 0 3px rgba(99,153,34,0.12);
-  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(99,153,34,0.12); }
   input[type=number] { -moz-appearance: textfield; }
   select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .item-header {
-    display: grid;
-    grid-template-columns: 1fr 160px 90px 36px;
-    gap: 8px; margin-bottom: 6px; padding: 0 2px;
-  }
-  .item-header span {
-    font-size: 11px; color: var(--gray-400); font-weight: 500;
-  }
-  .item-wrap {
-    margin-bottom: 10px;
-    border-bottom: 1px dashed #e5e2d6;
-  }
-  .item-row {
-    display: grid;
-    grid-template-columns: 1fr 160px 90px 36px;
-    gap: 8px; padding: 0 2px; align-items: center;
-  }
-  .item-row input, .item-row select {
-    padding: 9px 10px; font-size: 14px;
-  }
-  .item-extras {
-    margin-top: 6px;
-    padding: 8px 2px 2px 2px;
-  }
-  .item-extras-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-    margin-bottom: 6px;
-  }
+
+  /* ── Supply form items ── */
+  .item-header { display: grid; grid-template-columns: 1fr 160px 90px 36px; gap: 8px; margin-bottom: 6px; padding: 0 2px; }
+  .item-header span { font-size: 11px; color: var(--gray-400); font-weight: 500; }
+  .item-wrap { margin-bottom: 10px; border-bottom: 1px dashed #e5e2d6; }
+  .item-row { display: grid; grid-template-columns: 1fr 160px 90px 36px; gap: 8px; padding: 0 2px; align-items: center; }
+  .item-row input, .item-row select { padding: 9px 10px; font-size: 14px; }
+  .item-extras { margin-top: 6px; padding: 8px 2px 2px 2px; }
+  .item-extras-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 6px; }
   .extra-field { display: flex; flex-direction: column; }
-  .extra-field label {
-    font-size: 10px; color: var(--gray-400);
-    margin-bottom: 3px; letter-spacing: 0.01em;
-  }
-  .extra-field input {
-    padding: 7px 9px; font-size: 13px;
-  }
-  .item-note-field { }
-  .item-note-field label {
-    font-size: 10px; color: var(--gray-400);
-    margin-bottom: 3px; letter-spacing: 0.01em;
-  }
-  .item-note-field textarea {
-    min-height: 38px; font-size: 13px;
-    padding: 7px 9px; resize: vertical;
-  }
+  .extra-field label { font-size: 10px; color: var(--gray-400); margin-bottom: 3px; }
+  .extra-field input { padding: 7px 9px; font-size: 13px; }
+  .item-note-field label { font-size: 10px; color: var(--gray-400); margin-bottom: 3px; }
+  .item-note-field textarea { min-height: 38px; font-size: 13px; padding: 7px 9px; resize: vertical; }
   .qty-wrap { display: flex; gap: 5px; }
   .qty-wrap select { padding: 9px 24px 9px 6px; font-size: 13px; flex: none; width: 62px; }
-  .remove-btn {
-    background: none;
-    border: 1px solid var(--gray-off-white-warm);
-    border-radius: 8px;
-    width: 36px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--gray-400);
-    font-size: 18px;
-    transition: all 0.15s;
-  }
+  .remove-btn { background: none; border: 1px solid var(--gray-off-white-warm); border-radius: 8px; width: 36px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--gray-400); font-size: 18px; transition: all 0.15s; }
   .remove-btn:hover { border-color: var(--red-400); color: var(--red-400); background: var(--red-50); }
-  .add-btn {
-    width: 100%; margin-top: 4px;
-    border: 1.5px dashed #ccc;
-    border-radius: 8px; padding: 10px;
-    background: var(--gray-50); color: var(--gray-600);
-    font-size: 14px; font-family: inherit;
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: center; gap: 6px; transition: all 0.15s;
-  }
+  .add-btn { width: 100%; margin-top: 4px; border: 1.5px dashed #ccc; border-radius: 8px; padding: 10px; background: var(--gray-50); color: var(--gray-600); font-size: 14px; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
   .add-btn:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
   textarea { resize: vertical; min-height: 72px; font-size: 14px; }
-  .submit-btn {
-    width: 100%; padding: 14px;
-    background: var(--green-600); color: #fff;
-    border: none; border-radius: 10px;
-    font-size: 16px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-    display: flex; align-items: center;
-    justify-content: center; gap: 8px;
-    transition: background 0.15s, transform 0.1s;
-    letter-spacing: 0.03em;
-  }
+
+  /* ── Buttons ── */
+  .submit-btn { width: 100%; padding: 14px; background: var(--green-600); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, transform 0.1s; letter-spacing: 0.03em; }
   .submit-btn:hover { background: var(--green-800); }
   .submit-btn:active { transform: scale(0.98); }
   .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-  .success-box {
-    display: none;
-    background: var(--green-50);
-    border: 1.5px solid var(--green-100);
-    border-radius: 12px;
-    padding: 1.25rem 1.1rem;
-    text-align: center;
-  }
+  .submit-btn.red-btn { background: var(--red-600); }
+  .submit-btn.red-btn:hover { background: var(--red-800); }
+
+  .success-box { display: none; background: var(--green-50); border: 1.5px solid var(--green-100); border-radius: 12px; padding: 1.25rem 1.1rem; text-align: center; }
   .success-box .big-check { font-size: 40px; margin-bottom: 10px; display: block; }
   .success-box h2 { font-size: 18px; color: var(--green-800); margin-bottom: 6px; }
   .success-box p { font-size: 14px; color: var(--green-600); line-height: 1.6; }
-  .success-box .re-btn {
-    margin-top: 16px;
-    background: var(--green-600); color: #fff;
-    border: none; border-radius: 8px;
-    padding: 10px 24px; font-size: 14px;
-    font-family: inherit; cursor: pointer; font-weight: 500;
-  }
-  .error-msg {
-    display: none;
-    background: var(--red-50); color: var(--red-600);
-    border: 1px solid #f5b8b8; border-radius: 8px;
-    padding: 0.8rem 1rem; font-size: 13px;
-    margin-top: 10px;
-  }
-  .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
+  .success-box .re-btn { margin-top: 16px; background: var(--green-600); color: #fff; border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-family: inherit; cursor: pointer; font-weight: 500; }
+  .error-msg { display: none; background: var(--red-50); color: var(--red-600); border: 1px solid #f5b8b8; border-radius: 8px; padding: 0.8rem 1rem; font-size: 13px; margin-top: 10px; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .footer {
-    text-align: center; font-size: 12px;
-    color: var(--gray-400); margin-top: 2rem;
-    padding-bottom: 1rem;
-  }
+  .footer { text-align: center; font-size: 12px; color: var(--gray-400); margin-top: 2rem; padding-bottom: 1rem; }
 
-  /* ── Browse Tab Styles ── */
-  .browse-controls {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-  }
+  /* ── Browse tab ── */
+  .browse-controls { display: flex; gap: 8px; align-items: flex-end; }
   .browse-controls .field { flex: 1; margin-bottom: 0; }
-  .fetch-btn {
-    flex-shrink: 0;
-    padding: 10px 18px;
-    background: var(--green-600); color: #fff;
-    border: none; border-radius: 8px;
-    font-size: 14px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    transition: background 0.15s;
-    white-space: nowrap;
-    height: 44px;
-  }
+  .fetch-btn { flex-shrink: 0; padding: 10px 18px; background: var(--green-600); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; white-space: nowrap; height: 44px; }
   .fetch-btn:hover { background: var(--green-800); }
   .fetch-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-  .week-quick-select {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-  .week-chip {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-100);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: var(--gray-600);
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
+  .week-quick-select { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .week-chip { background: var(--gray-50); border: 1px solid var(--gray-100); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--gray-600); cursor: pointer; transition: all 0.15s; font-family: inherit; }
   .week-chip:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
   .week-chip.active { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); font-weight: 600; }
   .chips-hint { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
-  .refresh-text-btn {
-    background: none;
-    border: none;
-    color: var(--gray-400);
-    font-size: 12px;
-    font-family: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 4px 0;
-    margin-top: 6px;
-    transition: color 0.15s;
-  }
+  .refresh-text-btn { background: none; border: none; color: var(--gray-400); font-size: 12px; font-family: inherit; cursor: pointer; text-decoration: underline; padding: 4px 0; margin-top: 6px; }
   .refresh-text-btn:hover { color: var(--green-600); }
-  .refresh-text-btn.spinning { color: var(--gray-400); cursor: wait; }
-  .browse-empty {
-    text-align: center;
-    padding: 2.5rem 1rem;
-    color: var(--gray-400);
-    font-size: 14px;
-  }
+  .browse-empty { text-align: center; padding: 2.5rem 1rem; color: var(--gray-400); font-size: 14px; }
   .browse-empty .empty-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+  .browse-spinner-wrap { display: none; text-align: center; padding: 2rem; }
+  .browse-spinner { display: inline-block; width: 24px; height: 24px; border: 2.5px solid #d3d1c7; border-top-color: var(--green-600); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .farm-group { background: #fff; border: 1px solid #e2e0d8; border-radius: 14px; margin-bottom: 1rem; overflow: hidden; }
+  .farm-group-header { background: var(--green-800); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .farm-group-header .farm-name { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 7px; }
+  .farm-group-header .farm-meta { font-size: 11px; color: rgba(255,255,255,0.65); text-align: right; }
+  .farm-note-banner { background: var(--amber-50); border-bottom: 1px solid #f0deb0; padding: 8px 14px; font-size: 12px; color: #7a5010; display: flex; gap: 6px; }
+  .farm-note-banner .note-label { font-weight: 600; flex-shrink: 0; }
+  .browse-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .browse-table th { background: var(--gray-50); color: var(--gray-600); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e5e2d6; }
+  .browse-table td { padding: 9px 10px; border-bottom: 1px solid #f0ede6; color: var(--gray-800); vertical-align: top; }
+  .browse-table tr:last-child td { border-bottom: none; }
+  .browse-table tr:hover td { background: #fafaf7; }
+  .price-pill { display: inline-block; background: var(--green-50); border: 1px solid var(--green-100); border-radius: 5px; padding: 1px 6px; font-size: 12px; color: var(--green-600); font-weight: 500; }
+  .wholesale-pill { display: inline-block; background: #FFF4E0; border: 1px solid #E8C060; border-radius: 5px; padding: 1px 6px; font-size: 12px; color: #A0600A; font-weight: 600; }
+  .item-note-badge { font-size: 11px; color: var(--gray-400); font-style: italic; margin-top: 2px; }
+  .browse-summary { font-size: 12px; color: var(--gray-400); padding: 0.6rem 0 0.2rem; text-align: right; }
 
-  .browse-spinner-wrap {
-    display: none;
-    text-align: center;
-    padding: 2rem;
+  /* ── Order tab ── */
+  .order-raw-textarea {
+    width: 100%; min-height: 160px;
+    border: 1px solid #d8d6cc; border-radius: 8px;
+    padding: 12px; font-size: 14px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    color: #1a1a18; background: #fafaf7;
+    outline: none; resize: vertical;
+    transition: border-color 0.15s;
+    line-height: 1.7;
   }
-  .browse-spinner {
-    display: inline-block;
-    width: 24px; height: 24px;
-    border: 2.5px solid #d3d1c7;
-    border-top-color: var(--green-600);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+  .order-raw-textarea:focus { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(99,153,34,0.12); background: #fff; }
+  .parse-btn {
+    width: 100%; margin-top: 10px;
+    background: var(--green-600); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 11px; font-size: 14px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background 0.15s;
   }
+  .parse-btn:hover { background: var(--green-800); }
 
-  /* ── Farm group card ── */
-  .farm-group {
-    background: #fff;
-    border: 1px solid #e2e0d8;
-    border-radius: 14px;
-    margin-bottom: 1rem;
-    overflow: hidden;
+  /* Order preview table */
+  .order-preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .order-preview-table th {
+    background: var(--red-50); color: var(--red-600);
+    font-weight: 600; font-size: 10px; letter-spacing: 0.04em;
+    padding: 6px 8px; text-align: left;
+    border-bottom: 1px solid #f0c8c8;
   }
-  .farm-group-header {
-    background: var(--green-800);
+  .order-preview-table td { padding: 5px 4px; border-bottom: 1px solid #f5f0f0; vertical-align: middle; }
+  .order-preview-table tr:last-child td { border-bottom: none; }
+  .order-preview-table input[type=text],
+  .order-preview-table input[type=number] {
+    padding: 6px 8px; font-size: 13px; border-radius: 6px;
+    width: 100%;
+  }
+  .order-preview-table select { padding: 6px 28px 6px 8px; font-size: 13px; border-radius: 6px; }
+  .shop-row-header {
+    background: #fdf0f0;
+    font-size: 12px; font-weight: 600;
+    color: var(--red-600);
+    padding: 5px 8px;
+    border-bottom: 1px solid #f0c8c8;
+    letter-spacing: 0.02em;
+  }
+  .order-remove-btn {
+    background: none; border: none;
+    color: var(--gray-400); font-size: 16px;
+    cursor: pointer; padding: 4px 6px;
+    border-radius: 5px; transition: all 0.15s;
+  }
+  .order-remove-btn:hover { color: var(--red-400); background: var(--red-50); }
+  .order-total-pill {
+    font-size: 12px; color: var(--red-600); font-weight: 600;
+    background: var(--red-50); border: 1px solid #f0c8c8;
+    border-radius: 5px; padding: 1px 6px; display: inline-block;
+  }
+  .parse-hint {
+    font-size: 12px; color: var(--gray-400);
+    margin-top: 8px; line-height: 1.6;
+  }
+  .order-step-label {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .step-badge {
+    background: var(--red-600); color: #fff;
+    font-size: 11px; font-weight: 700;
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .order-step-label .step-title {
+    font-size: 11px; font-weight: 600;
+    color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .order-summary-bar {
+    background: var(--red-50); border: 1px solid #f0c8c8;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; color: var(--red-600);
+    margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .order-summary-bar strong { font-weight: 700; }
+
+  /* ── Browse Sub-tabs ── */
+  .browse-subtab-bar {
+    display: flex; gap: 0; margin-bottom: 14px;
+    border: 1px solid #e2e0d8; border-radius: 10px; overflow: hidden;
+  }
+  .browse-subtab {
+    flex: 1; padding: 9px 12px;
+    background: var(--gray-50); border: none;
+    color: var(--gray-600); font-size: 13px; font-weight: 500;
+    font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    transition: all 0.15s; border-right: 1px solid #e2e0d8;
+  }
+  .browse-subtab:last-child { border-right: none; }
+  .browse-subtab:hover { background: var(--green-50); color: var(--green-600); }
+  .browse-subtab.active { background: var(--green-800); color: #fff; font-weight: 600; }
+  .browse-subtab.active.order-tab { background: var(--red-600); }
+
+  /* ── Order browse group card ── */
+  .order-group {
+    background: #fff; border: 1px solid #e2e0d8;
+    border-radius: 14px; margin-bottom: 1rem; overflow: hidden;
+  }
+  .order-group-header {
+    background: var(--red-600);
     padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
-  .farm-group-header .farm-name {
+  .order-group-header .shop-name {
     font-size: 15px; font-weight: 600; color: #fff;
     display: flex; align-items: center; gap: 7px;
   }
-  .farm-group-header .farm-meta {
-    font-size: 11px; color: rgba(255,255,255,0.65);
-    text-align: right;
+  .order-group-header .shop-meta {
+    font-size: 11px; color: rgba(255,255,255,0.7); text-align: right;
   }
-  .farm-note-banner {
-    background: var(--amber-50);
-    border-bottom: 1px solid #f0deb0;
-    padding: 8px 14px;
-    font-size: 12px;
-    color: #7a5010;
-    display: flex;
-    gap: 6px;
+  .order-group-delivery {
+    background: #fff8f0; border-bottom: 1px solid #f0deb0;
+    padding: 7px 14px; font-size: 12px; color: #7a5010;
+    display: flex; gap: 14px; flex-wrap: wrap;
   }
-  .farm-note-banner .note-label {
-    font-weight: 600; flex-shrink: 0;
+  .order-group-delivery span { display: flex; align-items: center; gap: 4px; }
+  .order-browse-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .order-browse-table th {
+    background: #fff5f5; color: var(--red-600); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.04em; padding: 6px 10px;
+    text-align: left; border-bottom: 1px solid #f0c8c8;
   }
-
-  .browse-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
+  .order-browse-table td {
+    padding: 8px 10px; border-bottom: 1px solid #faf0f0;
+    color: var(--gray-800); vertical-align: top;
   }
-  .browse-table th {
-    background: var(--gray-50);
-    color: var(--gray-600);
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    padding: 7px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e5e2d6;
+  .order-browse-table tr:last-child td { border-bottom: none; }
+  .order-browse-table tr:hover td { background: #fffaf9; }
+  .pay-pill {
+    display: inline-block; border-radius: 5px;
+    padding: 1px 7px; font-size: 11px; font-weight: 600;
   }
-  .browse-table td {
-    padding: 9px 10px;
-    border-bottom: 1px solid #f0ede6;
-    color: var(--gray-800);
-    vertical-align: top;
-  }
-  .browse-table tr:last-child td { border-bottom: none; }
-  .browse-table tr:hover td { background: #fafaf7; }
-
-  .price-pill {
-    display: inline-block;
-    background: var(--green-50);
-    border: 1px solid var(--green-100);
-    border-radius: 5px;
-    padding: 1px 6px;
-    font-size: 12px;
-    color: var(--green-600);
-    font-weight: 500;
-  }
-  .retail-pill {
-    display: inline-block;
-    background: var(--amber-50);
-    border: 1px solid #f0deb0;
-    border-radius: 5px;
-    padding: 1px 6px;
-    font-size: 12px;
-    color: #7a5010;
-    font-weight: 500;
-  }
-  .wholesale-pill {
-    display: inline-block;
-    background: #FFF4E0;
-    border: 1px solid #E8C060;
-    border-radius: 5px;
-    padding: 1px 6px;
-    font-size: 12px;
-    color: #A0600A;
-    font-weight: 600;
-  }
-  .wholesale-wrap {
-    font-size: 11px;
-    color: var(--gray-400);
-    margin-top: 2px;
-  }
-  .item-note-badge {
-    font-size: 11px;
-    color: var(--gray-400);
-    font-style: italic;
-    margin-top: 2px;
+  .pay-pill.pending  { background: #FFF4E0; border: 1px solid #E8C060; color: #A0600A; }
+  .pay-pill.paid     { background: var(--green-50); border: 1px solid var(--green-100); color: var(--green-600); }
+  .pay-pill.cod      { background: #EEF4FF; border: 1px solid #B0C8F0; color: #2850A0; }
+  .pay-pill.none     { background: var(--gray-50); border: 1px solid var(--gray-100); color: var(--gray-400); }
+  .order-browse-summary {
+    font-size: 12px; color: var(--gray-400); padding: 0.6rem 0 0.2rem; text-align: right;
   }
 
-  .browse-summary {
-    font-size: 12px;
-    color: var(--gray-400);
-    padding: 0.6rem 0 0.2rem;
-    text-align: right;
+  /* ── Order browse controls ── */
+  .order-browse-filter {
+    display: flex; gap: 8px; align-items: flex-end; margin-top: 10px;
   }
+  .order-browse-filter .field { flex: 1; margin-bottom: 0; }
+  .order-browse-filter input { font-size: 14px; padding: 9px 12px; }
 
-  /* ── Edit mode ── */
-  .row-edit-btn {
-    background: none;
-    border: 1px solid var(--gray-100);
-    border-radius: 6px;
-    padding: 4px 6px;
-    cursor: pointer;
-    color: var(--gray-400);
-    font-size: 13px;
-    line-height: 1;
-    transition: all 0.15s;
-  }
-  .row-edit-btn:hover { border-color: var(--green-400); color: var(--green-600); background: var(--green-50); }
-  .edit-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.9);
-    border-radius: 7px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-family: inherit;
-    cursor: pointer;
-    flex-shrink: 0;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .edit-btn:hover { background: rgba(255,255,255,0.28); }
-  .farm-edit-body { padding: 12px 14px 14px; }
-  .edit-section-label {
-    font-size: 11px; font-weight: 600; color: var(--gray-400);
-    text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 10px; margin-top: 14px;
-  }
-  .edit-actions { display: flex; gap: 8px; margin-top: 14px; }
-  .save-edit-btn {
-    flex: 1; padding: 10px;
-    background: var(--green-600); color: #fff;
-    border: none; border-radius: 8px;
-    font-size: 14px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    transition: background 0.15s;
-  }
-  .save-edit-btn:hover { background: var(--green-800); }
-  .save-edit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
-  .cancel-edit-btn {
-    padding: 10px 18px;
-    background: none; border: 1px solid var(--gray-100);
-    border-radius: 8px; color: var(--gray-600);
-    font-size: 14px; font-family: inherit; cursor: pointer;
-    transition: all 0.15s;
-  }
-  .cancel-edit-btn:hover { border-color: var(--gray-400); color: var(--gray-800); }
-
-  /* ── Responsive ── */
   @media (max-width: 480px) {
     .item-header { grid-template-columns: 1fr 120px 70px 32px; }
     .item-row { grid-template-columns: 1fr 120px 70px 32px; }
@@ -594,53 +351,7 @@
     .item-extras-grid { grid-template-columns: 1fr 1fr; }
     .browse-controls { flex-direction: column; align-items: stretch; }
     .fetch-btn { width: 100%; justify-content: center; }
-    /*.browse-table th:nth-child(4),
-    .browse-table td:nth-child(4) { display: none; }*/
   }
-
-  /* ── Order Input Tab ── */
-  .order-shop-group { margin-bottom: 14px; }
-  .order-shop-header {
-    font-size: 13px; font-weight: 600;
-    color: var(--green-800);
-    background: var(--green-50);
-    border: 1px solid var(--green-100);
-    border-radius: 8px 8px 0 0;
-    padding: 8px 12px;
-  }
-  .order-preview-table {
-    width: 100%; border-collapse: collapse;
-    border: 1px solid var(--green-100); border-top: none;
-    border-radius: 0 0 8px 8px; overflow: hidden;
-  }
-  .order-preview-table th {
-    font-size: 11px; color: var(--gray-400); font-weight: 500;
-    padding: 6px 8px; text-align: left;
-    background: var(--gray-50); border-bottom: 1px solid var(--gray-100);
-  }
-  .order-preview-table td {
-    padding: 5px 6px; border-bottom: 1px solid #f0ede5; vertical-align: middle;
-  }
-  .order-preview-table tr:last-child td { border-bottom: none; }
-  .order-preview-table input[type=text] { width: 100%; min-width: 80px; }
-  .order-preview-table input[type=number] { width: 68px; }
-  .order-preview-table select { padding-right: 24px; }
-  .order-del-btn {
-    background: none; border: none; color: var(--gray-400);
-    cursor: pointer; font-size: 18px; line-height: 1;
-    padding: 2px 6px; border-radius: 4px; transition: color 0.15s;
-  }
-  .order-del-btn:hover { color: var(--red-400); }
-  .parse-btn {
-    width: 100%; padding: 11px;
-    background: var(--green-400); color: #fff;
-    border: none; border-radius: 8px;
-    font-size: 15px; font-weight: 600; font-family: inherit;
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: center; gap: 8px;
-    transition: background 0.15s; margin-top: 10px;
-  }
-  .parse-btn:hover { background: var(--green-600); }
 </style>
 </head>
 <body>
@@ -684,31 +395,30 @@
 <div class="tab-bar">
   <div class="tab-bar-inner">
     <button class="tab-btn active" id="tabRegister" onclick="switchTab('register')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M12 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V3a1 1 0 00-1-1z" stroke="currentColor" stroke-width="1.4"/>
-        <path d="M5.5 6h5M5.5 9h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-      </svg>
-      供應登記
-    </button>
-    <button class="tab-btn" id="tabBrowse" onclick="switchTab('browse')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
-        <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      瀏覽
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.2 2 3 4.2 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.8-2.2-5-5-5z" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="8" cy="7" r="1.5" fill="currentColor"/></svg>
+      農場
     </button>
     <button class="tab-btn" id="tabOrder" onclick="switchTab('order')">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="4" y1="2" x2="4" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="7" y1="2" x2="7" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="10" y1="2" x2="10" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="7" y1="7" x2="7" y2="14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M11 2 Q15 6 11 9 L11 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
-      訂單輸入
+      餐廳
+    </button>
+    <button class="tab-btn" id="tabBrowse" onclick="switchTab('browse')">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      瀏覽＆編輯
     </button>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- ═══════════════════════════════════ REGISTER TAB ═══════════════════════════════════ -->
+  <!-- ═══ REGISTER TAB ═══ -->
   <div id="panelRegister">
     <div id="formSection">
       <div class="card">
@@ -726,24 +436,24 @@
         <div class="row2" style="margin-top:11px">
           <div class="field">
             <label>登記人</label>
-            <input type="text" id="register" placeholder="例：游大海" autocomplete="register" />
+            <input type="text" id="register" placeholder="例：游大海" autocomplete="name" />
           </div>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">農產品品項 <span id="itemCountLabel" style="font-size:11px; color:var(--gray-400); font-weight:400; text-transform:none; letter-spacing:0;"></span></div>
+        <div class="card-title">農產品品項 <span id="itemCountLabel" style="font-size:11px;color:var(--gray-400);font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
         <div id="itemsContainer"></div>
         <button class="add-btn" onclick="addItem()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           新增品項
         </button>
       </div>
       <div class="card">
         <div class="card-title">備註（選填）</div>
-        <textarea id="notes" placeholder="例：小番茄下週供應量會增加、菜豆快要結束了…"></textarea>
+        <textarea id="notes" placeholder="例：小番茄下週供應量會增加…"></textarea>
       </div>
       <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
         送出登記
       </button>
       <div class="error-msg" id="errorMsg"></div>
@@ -752,106 +462,195 @@
       <span class="big-check">✅</span>
       <h2>登記成功！</h2>
       <p id="successDetail"></p>
-      <p id="successMsg">我們會努力幫您用心的成果找到適合的餐桌。</p>
+      <p>我們會努力幫您用心的成果找到適合的餐桌。</p>
       <button class="re-btn" onclick="resetForm()">再填一次</button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════ BROWSE TAB ═════════════════════════════════════ -->
-  <div id="panelBrowse" style="display:none">
-    <div class="card">
-      <div class="card-title">選擇週次查詢</div>
-      <div class="browse-controls">
-        <div class="field">
-          <label for="browseWeekDate">可出貨週一日期</label>
-          <input type="date" id="browseWeekDate" />
-        </div>
-        <button class="fetch-btn" id="fetchBtn" onclick="fetchBrowseData()">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          查詢
-        </button>
-      </div>
-      <!-- Quick week chips loaded from API -->
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <div class="chips-hint" id="chipsHint"></div>
-        <div class="week-quick-select" id="weekChips"></div>
-        <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理週次清單</button>
-      </div>
-    </div>
-
-    <div class="browse-spinner-wrap" id="browseSpinner">
-      <div class="browse-spinner"></div>
-    </div>
-
-    <div id="searchResults">
-      <div class="browse-empty">
-        <span class="empty-icon">🌱</span>
-        請選擇週次後按「查詢」
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ ORDER TAB ═══════════════════════════════════ -->
+  <!-- ═══ ORDER TAB ═══ -->
   <div id="panelOrder" style="display:none">
     <div id="orderFormSection">
+
+      <!-- Step 1: paste text -->
       <div class="card">
-        <div class="card-title">基本資料</div>
+        <div class="order-step-label">
+          <span class="step-badge" style="background:var(--red-600)">1</span>
+          <span class="step-title">貼入下單訊息</span>
+        </div>
+        <textarea class="order-raw-textarea" id="orderRawText"
+          placeholder="料理人下單，&#10;恰比兔子&#10;綠火焰/2斤&#10;龍葵2斤&#10;&#10;雲舍&#10;紅蘿蔔+2包&#10;青蔥+2把"></textarea>
+        <div class="parse-hint">支援格式：品名＋數量＋單位（公斤/斤/顆/把/包/支…），中文數字亦可。</div>
+        <button class="parse-btn" onclick="parseAndPreview()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          解析訂單
+        </button>
+      </div>
+
+      <!-- Step 2: preview & edit -->
+      <div class="card" id="orderPreviewCard" style="display:none">
+        <div class="order-step-label">
+          <span class="step-badge" style="background:var(--red-600)">2</span>
+          <span class="step-title">確認 / 修改品項</span>
+        </div>
+        <div id="orderSummaryBar" class="order-summary-bar"></div>
+        <div style="overflow-x:auto;">
+          <table class="order-preview-table" id="orderPreviewTable">
+            <thead>
+              <tr>
+                <th>店家／料理人</th>
+                <th>品名</th>
+                <th>數量</th>
+                <th>單位</th>
+                <th>單價（元）</th>
+                <th>小計</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="orderPreviewBody"></tbody>
+          </table>
+        </div>
+        <button class="add-btn" onclick="addOrderRow()" style="margin-top:10px">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          手動新增一列
+        </button>
+      </div>
+
+      <!-- Step 3: delivery details -->
+      <div class="card" id="orderDetailsCard" style="display:none">
+        <div class="order-step-label">
+          <span class="step-badge" style="background:var(--red-600)">3</span>
+          <span class="step-title">填寫交貨資訊</span>
+        </div>
         <div class="row2">
           <div class="field">
             <label>登記人</label>
-            <input type="text" id="orderRegister" placeholder="例：游大海" />
+            <input type="text" id="orderRegistrant" placeholder="填寫人姓名" />
           </div>
           <div class="field">
-            <label>週次（選擇週一日期）</label>
+            <label>週次（週一日期）</label>
             <input type="date" id="orderWeekDate" />
           </div>
         </div>
+        <div class="row2" style="margin-top:10px">
+          <div class="field">
+            <label>送貨地點</label>
+            <input type="text" id="orderDeliveryLocation" placeholder="例：花蓮市區集貨點" />
+          </div>
+          <div class="field">
+            <label>送貨時間</label>
+            <input type="text" id="orderDeliveryTime" placeholder="例：週三上午10點" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>付款狀態</label>
+          <select id="orderPaymentStatus">
+            <option value="">未設定</option>
+            <option value="待付款">待付款</option>
+            <option value="已付款">已付款</option>
+            <option value="貨到付款">貨到付款</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>整批備註（選填）</label>
+          <textarea id="orderBatchNote" placeholder="例：本批請冷藏運送…" style="min-height:52px"></textarea>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">貼上 LINE 訂單訊息</div>
-        <div class="field">
-          <textarea id="lineMsg" rows="12"
-            placeholder="貼上 LINE 訊息，例：&#10;恰比兔子&#10;綠火焰/2斤&#10;龍葵2斤&#10;&#10;雲舍&#10;紅蘿蔔 +2包&#10;青蔥 +2把"></textarea>
-        </div>
-        <button class="parse-btn" onclick="parseAndPreview()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          解析訊息
-        </button>
-      </div>
-
-      <div id="orderPreviewSection" style="display:none">
-        <div class="card">
-          <div class="card-title">解析預覽 <span id="orderPreviewCount" style="font-size:11px;color:var(--gray-400);font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
-          <div id="orderPreviewContent"></div>
-        </div>
-        <button class="submit-btn" id="orderSubmitBtn" onclick="submitOrder()">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-          送出訂單
-        </button>
-        <div class="error-msg" id="orderErrorMsg"></div>
-      </div>
+      <button class="submit-btn red-btn" id="orderSubmitBtn" onclick="submitOrder()" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        送出訂單
+      </button>
+      <div class="error-msg" id="orderErrorMsg"></div>
     </div>
 
     <div class="success-box" id="orderSuccessBox" style="display:none">
-      <span class="big-check">✅</span>
+      <span class="big-check">📋</span>
       <h2>訂單登記成功！</h2>
       <p id="orderSuccessDetail"></p>
-      <p>資料已寫入 Google Sheet。</p>
-      <button class="re-btn" onclick="resetOrder()">再填一次</button>
+      <button class="re-btn" onclick="resetOrderForm()">再填一次</button>
     </div>
+  </div>
+
+  <!-- ═══ BROWSE TAB ═══ -->
+  <div id="panelBrowse" style="display:none">
+
+    <!-- Sub-tabs -->
+    <div class="browse-subtab-bar">
+      <button class="browse-subtab active" id="subTabFarm" onclick="switchBrowseSubTab('farm')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.2 2 3 4.2 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.8-2.2-5-5-5z" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="8" cy="7" r="1.5" fill="currentColor"/></svg>
+        農場供應
+      </button>
+      <button class="browse-subtab order-tab" id="subTabOrder" onclick="switchBrowseSubTab('order')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        店家訂單
+      </button>
+    </div>
+
+    <!-- ── Farm supply browse ── -->
+    <div id="browsePanelFarm">
+      <div class="card">
+        <div class="card-title">選擇週次查詢</div>
+        <div class="browse-controls">
+          <div class="field">
+            <label for="browseWeekDate">可出貨週一日期</label>
+            <input type="date" id="browseWeekDate" />
+          </div>
+          <button class="fetch-btn" id="fetchBtn" onclick="fetchBrowseData()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            查詢
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="chips-hint" id="chipsHint"></div>
+          <div class="week-quick-select" id="weekChips"></div>
+          <button class="refresh-text-btn" id="refreshBtn" onclick="refreshWeekChips()" style="display:none">↻ 重新整理</button>
+        </div>
+      </div>
+      <div class="browse-spinner-wrap" id="browseSpinner"><div class="browse-spinner"></div></div>
+      <div id="searchResults">
+        <div class="browse-empty"><span class="empty-icon">🌱</span>請選擇週次後按「查詢」</div>
+      </div>
+    </div>
+
+    <!-- ── Order browse ── -->
+    <div id="browsePanelOrder" style="display:none">
+      <div class="card">
+        <div class="card-title">選擇週次查詢訂單</div>
+        <div class="browse-controls">
+          <div class="field">
+            <label for="orderBrowseWeekDate">週一日期</label>
+            <input type="date" id="orderBrowseWeekDate" />
+          </div>
+          <button class="fetch-btn" id="orderFetchBtn" onclick="fetchOrderBrowseData()" style="background:var(--red-600)">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            查詢
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="chips-hint" id="orderChipsHint"></div>
+          <div class="week-quick-select" id="orderWeekChips"></div>
+          <button class="refresh-text-btn" id="orderRefreshBtn" onclick="refreshOrderWeekChips()" style="display:none">↻ 重新整理</button>
+        </div>
+        <div class="order-browse-filter">
+          <div class="field">
+            <label>篩選店家（選填）</label>
+            <input type="text" id="orderShopFilter" placeholder="輸入店家名稱關鍵字…" />
+          </div>
+        </div>
+      </div>
+      <div class="browse-spinner-wrap" id="orderBrowseSpinner"><div class="browse-spinner" style="border-top-color:var(--red-600)"></div></div>
+      <div id="orderSearchResults">
+        <div class="browse-empty"><span class="empty-icon">🧾</span>請選擇週次後按「查詢」</div>
+      </div>
+    </div>
+
   </div>
 
   <div class="footer">農二菜車的農產品供應登記系統 · 感謝您的使用</div>
 </div>
 
 <script>
-const FORM_VERSION = 'v0.9.8';
+const FORM_VERSION = 'v1.0.0';
 let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
 let weekChipsLoaded = false;
 
@@ -859,7 +658,7 @@ document.getElementById('headerTitle').textContent = `菜車供應登記 ${FORM_
 document.getElementById('settingsVersion').textContent = FORM_VERSION;
 document.getElementById('webhookInput').value = WEBHOOK_URL;
 
-// ── Settings ──────────────────────────────────────────────────────────────
+// ── Settings ────────────────────────────────────────────────
 function toggleSettings() {
   const panel = document.getElementById('settingsPanel');
   const btn = document.getElementById('settingsBtn');
@@ -869,9 +668,8 @@ function toggleSettings() {
   if (!isOpen) document.getElementById('webhookInput').value = WEBHOOK_URL;
 }
 function saveSettings() {
-  const val = document.getElementById('webhookInput').value.trim();
-  WEBHOOK_URL = val;
-  localStorage.setItem('webhookUrl', val);
+  WEBHOOK_URL = document.getElementById('webhookInput').value.trim();
+  localStorage.setItem('webhookUrl', WEBHOOK_URL);
   document.getElementById('settingsPanel').classList.remove('open');
   document.getElementById('settingsBtn').classList.remove('active');
 }
@@ -879,63 +677,51 @@ document.addEventListener('click', function(e) {
   const panel = document.getElementById('settingsPanel');
   const btn = document.getElementById('settingsBtn');
   if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
-    panel.classList.remove('open');
-    btn.classList.remove('active');
+    panel.classList.remove('open'); btn.classList.remove('active');
   }
 });
 
-// ── Tab switching ──────────────────────────────────────────────────────────
+// ── Tab switching ────────────────────────────────────────────
 let currentTab = 'register';
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('panelRegister').style.display = tab === 'register' ? '' : 'none';
-  document.getElementById('panelBrowse').style.display  = tab === 'browse'   ? '' : 'none';
-  document.getElementById('panelOrder').style.display   = tab === 'order'    ? '' : 'none';
-  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('tabBrowse').classList.toggle('active', tab === 'browse');
-  document.getElementById('tabOrder').classList.toggle('active', tab === 'order');
+  ['register','order','browse'].forEach(t => {
+    document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? '' : 'none';
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+  });
   if (tab === 'browse') {
     if (!document.getElementById('browseWeekDate').value)
       document.getElementById('browseWeekDate').value = getNearestMonday();
-    if (!weekChipsLoaded) {
-      loadWeekChips();
-      weekChipsLoaded = true;
-    }
+    if (!weekChipsLoaded) { loadWeekChips(); weekChipsLoaded = true; }
   }
 }
 
-// ── Utilities ──────────────────────────────────────────────
-
+// ── Utilities ────────────────────────────────────────────────
 function getWeekOfMonth(dateStr) {
   const d = new Date(dateStr);
   const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
-  const firstDayOfWeek = firstDay.getDay();
-  const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+  const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
   return Math.ceil((d.getDate() + offset) / 7);
 }
 function formatDate(val) {
   const [year, month] = val.split('-');
-  const week = getWeekOfMonth(val);
-  return `${year}-${month}-第${week}週`;
+  return `${year}-${month}-第${getWeekOfMonth(val)}週`;
 }
-function weekStrToDate(weekStr) {
-  // "2025-05-第2週" → "2025-05-06" (approximate Monday of that week)
-  const m = weekStr.match(/^(\d{4})-(\d{2})-第(\d+)週$/);
-  if (!m) return '';
-  const year = parseInt(m[1]), month = parseInt(m[2]) - 1, weekNum = parseInt(m[3]);
-  const firstDay = new Date(year, month, 1);
-  const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-  let day = (weekNum - 1) * 7 - offset + 1;
-  if (day < 1) day = 1;
-  const d = new Date(year, month, day);
-  return d.toISOString().slice(0, 10);
+function getNearestMonday() {
+  const today = new Date();
+  const day = today.getDay();
+  let diff = day === 0 ? 1 : day === 6 ? 2 : -(day - 1);
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  return monday.toISOString().split('T')[0];
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── Registration form ──────────────────────────────────────────────────────
-let items = [];
-let nid = 1;
-const UNITS = ['公斤','台斤','斤','顆','支','把','包','束','盒','袋','條','個','粒','份','打'];
+// ════════════════════════════════════════════════════════════
+// ── SUPPLY REGISTRATION FORM ─────────────────────────────────
+// ════════════════════════════════════════════════════════════
+let items = [], nid = 1;
+const UNITS = ['公斤','台斤','顆','束','盒','袋','打','斤','份'];
 
 function addItem(n='',q='',u='公斤',p='',wp='',wt='',rp='',note='') {
   items.push({id:nid++,name:n,qty:q,unit:u,price:p,wholesalePrice:wp,wholesaleThreshold:wt,retailPrice:rp,itemNote:note});
@@ -943,53 +729,29 @@ function addItem(n='',q='',u='公斤',p='',wp='',wt='',rp='',note='') {
 }
 function removeItem(id) { items=items.filter(i=>i.id!==id); renderItems(); }
 function updateItem(id,f,v) { const i=items.find(x=>x.id===id); if(i) i[f]=v; updateCount(); }
-
 function renderItems() {
-  const c = document.getElementById('itemsContainer');
-  c.innerHTML = '';
+  const c = document.getElementById('itemsContainer'); c.innerHTML='';
   items.forEach(item => {
-    const wrap = document.createElement('div');
-    wrap.className = 'item-wrap';
+    const wrap = document.createElement('div'); wrap.className='item-wrap';
     const unitOpts = UNITS.map(u=>`<option${u===item.unit?' selected':''}>${u}</option>`).join('');
     wrap.innerHTML = `
-      <div class="item-header">
-        <span>品名 *</span><span>數量</span><span>基本進貨價 (元) *</span><span></span>
-      </div>
+      <div class="item-header"><span>品名 *</span><span>數量</span><span>基本進貨價 (元) *</span><span></span></div>
       <div class="item-row">
-        <input type="text" value="${esc(item.name)}" placeholder="品名，例：小番茄"
-          onchange="updateItem(${item.id},'name',this.value)"
-          oninput="updateItem(${item.id},'name',this.value)" />
+        <input type="text" value="${esc(item.name)}" placeholder="品名" onchange="updateItem(${item.id},'name',this.value)" oninput="updateItem(${item.id},'name',this.value)"/>
         <div class="qty-wrap">
-          <input type="number" min="0" value="${esc(item.qty)}" placeholder="數量"
-            onchange="updateItem(${item.id},'qty',this.value)"
-            oninput="updateItem(${item.id},'qty',this.value)" />
+          <input type="number" min="0" value="${esc(item.qty)}" placeholder="數量" onchange="updateItem(${item.id},'qty',this.value)" oninput="updateItem(${item.id},'qty',this.value)"/>
           <select onchange="updateItem(${item.id},'unit',this.value)">${unitOpts}</select>
         </div>
-        <input type="number" min="0" value="${esc(item.price)}" placeholder="進貨價"
-          onchange="updateItem(${item.id},'price',this.value)"
-          oninput="updateItem(${item.id},'price',this.value)" />
+        <input type="number" min="0" value="${esc(item.price)}" placeholder="進貨價" onchange="updateItem(${item.id},'price',this.value)" oninput="updateItem(${item.id},'price',this.value)"/>
         <button class="remove-btn" onclick="removeItem(${item.id})" aria-label="刪除">×</button>
       </div>
       <div class="item-extras">
         <div class="item-extras-grid">
-          <div class="extra-field"><label>批價（元）</label>
-            <input type="number" min="0" value="${esc(item.wholesalePrice)}" placeholder="批價"
-              onchange="updateItem(${item.id},'wholesalePrice',this.value)"
-              oninput="updateItem(${item.id},'wholesalePrice',this.value)" /></div>
-          <div class="extra-field"><label>批價門檻（數量）</label>
-            <input type="number" min="0" value="${esc(item.wholesaleThreshold)}" placeholder="批量起訂"
-              onchange="updateItem(${item.id},'wholesaleThreshold',this.value)"
-              oninput="updateItem(${item.id},'wholesaleThreshold',this.value)" /></div>
-          <div class="extra-field"><label>末端建議售價（元）</label>
-            <input type="number" min="0" value="${esc(item.retailPrice)}" placeholder="建議零售價"
-              onchange="updateItem(${item.id},'retailPrice',this.value)"
-              oninput="updateItem(${item.id},'retailPrice',this.value)" /></div>
+          <div class="extra-field"><label>批價（元）</label><input type="number" min="0" value="${esc(item.wholesalePrice)}" placeholder="批價" onchange="updateItem(${item.id},'wholesalePrice',this.value)" oninput="updateItem(${item.id},'wholesalePrice',this.value)"/></div>
+          <div class="extra-field"><label>批價門檻（數量）</label><input type="number" min="0" value="${esc(item.wholesaleThreshold)}" placeholder="批量起訂" onchange="updateItem(${item.id},'wholesaleThreshold',this.value)" oninput="updateItem(${item.id},'wholesaleThreshold',this.value)"/></div>
+          <div class="extra-field"><label>末端建議售價（元）</label><input type="number" min="0" value="${esc(item.retailPrice)}" placeholder="建議零售價" onchange="updateItem(${item.id},'retailPrice',this.value)" oninput="updateItem(${item.id},'retailPrice',this.value)"/></div>
         </div>
-        <div class="item-note-field"><label>備注</label>
-          <textarea placeholder="此品項備注…"
-            onchange="updateItem(${item.id},'itemNote',this.value)"
-            oninput="updateItem(${item.id},'itemNote',this.value)">${esc(item.itemNote)}</textarea>
-        </div>
+        <div class="item-note-field"><label>備注</label><textarea placeholder="此品項備注…" onchange="updateItem(${item.id},'itemNote',this.value)" oninput="updateItem(${item.id},'itemNote',this.value)">${esc(item.itemNote)}</textarea></div>
       </div>`;
     c.appendChild(wrap);
   });
@@ -999,115 +761,300 @@ function updateCount() {
   const n = items.filter(i=>i.name&&i.qty&&i.price).length;
   document.getElementById('itemCountLabel').textContent = items.length ? `（${n}/${items.length} 項完整）` : '';
 }
-
 addItem();
 
 async function handleSubmit() {
   if (!WEBHOOK_URL) { showErr('請先在右上角設定中填入 Webhook 網址。'); return; }
-  const name = document.getElementById('register').value.trim();
   const farm = document.getElementById('farmerFarm').value.trim();
   const weekDate = document.getElementById('weekDate').value.trim();
-  if (!weekDate) { showErr('請確認 週次 有正確填寫'); document.getElementById('weekDate').focus(); return; }
-  if (!farm) { showErr('請確認 農場 有正確填寫'); document.getElementById('farmerFarm').focus(); return; }
+  if (!weekDate) { showErr('請確認週次有正確填寫'); return; }
+  if (!farm) { showErr('請確認農場有正確填寫'); return; }
   const valid = items.filter(i=>i.name&&i.price);
   if (!valid.length) { showErr('請至少填寫一項農產品（品名、進貨價都是必填）'); return; }
-
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> 送出中…';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 送出中…';
   hideErr();
-
-  const ts = new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei'});
-  const rows = valid.map((i, idx) => ({
-    時間戳記: ts, 登記人: name, 農場: farm,
-    週次: formatDate(document.getElementById('weekDate').value),
-    品名: i.name, 數量: i.qty, 單位: i.unit,
-    基本進貨價: i.price, 批價: i.wholesalePrice,
-    批價門檻: i.wholesaleThreshold, 末端建議售價: i.retailPrice,
-    品項備注: i.itemNote,
-    備註: idx === 0 ? document.getElementById('notes').value.trim() : '',
+  const ts = new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
+  const name = document.getElementById('register').value.trim();
+  const rows = valid.map((i,idx) => ({
+    時間戳記:ts, 登記人:name, 農場:farm,
+    週次:formatDate(weekDate), 品名:i.name, 數量:i.qty, 單位:i.unit,
+    基本進貨價:i.price, 批價:i.wholesalePrice, 批價門檻:i.wholesaleThreshold,
+    末端建議售價:i.retailPrice, 品項備注:i.itemNote,
+    備註:idx===0 ? document.getElementById('notes').value.trim() : '',
   }));
-
   try {
-    const res = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({rows}) });
-    const result = await res.json();
-    if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
+    await fetch(WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows})});
     hideErr();
-    showSuccess(farm, name, valid);
+    document.getElementById('formSection').style.display='none';
+    const box=document.getElementById('successBox'); box.style.display='block';
+    document.getElementById('successDetail').textContent=`${farm} 共登記 ${valid.length} 項：${valid.map(i=>i.name).join('、')}。`;
   } catch(e) {
-    showErr(`連線失敗：${e.message}`);
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
+    showErr('連線失敗，請確認網路或 Apps Script 網址。');
+    btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
   }
 }
 
-function showSuccess(farm, name, valid) {
-  document.getElementById('formSection').style.display = 'none';
-  const box = document.getElementById('successBox');
-  box.style.display = 'block';
-  box.scrollIntoView({behavior:'smooth', block:'start'});
-  document.getElementById('successDetail').textContent =
-    `${farm||name||'農場'} 共登記 ${valid.length} 項農產品：${valid.map(i=>i.name).join('、')}。`;
-}
 function resetForm() {
-  document.getElementById('formSection').style.display = 'block';
-  document.getElementById('successBox').style.display = 'none';
-  document.getElementById('notes').value = '';
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
-  items = []; nid = 1; addItem();
+  document.getElementById('formSection').style.display='block';
+  document.getElementById('successBox').style.display='none';
+  document.getElementById('notes').value='';
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出登記';
+  items=[]; nid=1; addItem();
 }
 function showErr(msg) { const e=document.getElementById('errorMsg'); e.style.display='block'; e.textContent=msg; e.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 function hideErr() { document.getElementById('errorMsg').style.display='none'; }
 
-// ── Browse tab ─────────────────────────────────────────────────────────────
-let availableWeeks = [];
+// ════════════════════════════════════════════════════════════
+// ── ORDER ENTRY ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+const ORDER_UNITS = ['公斤','台斤','斤','公克','顆','支','束','盒','袋','打','份','把','包','條','片'];
+const CN_NUM = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'半':0.5};
 
+let orderRows = [];   // [{id, shop, name, qty, unit, price}]
+let orderNid = 1;
+
+function parseOrderText(rawText) {
+  const unitRe = ORDER_UNITS.join('|');
+  const numRe = '\\d+(?:\\.\\d+)?|[一二三四五六七八九十半]';
+  const itemRe = new RegExp(`^(.+?)[/／\\s+＋]*(${numRe})(${unitRe})\\s*$`);
+
+  const result = [];
+  let currentShop = '';
+
+  rawText.split('\n').forEach(line => {
+    line = line.trim();
+    if (!line) return;
+
+    // Remove leading + / ＋
+    const cleanLine = line.replace(/^[+＋]+\s*/, '');
+
+    // Try to match item pattern
+    const match = cleanLine.match(itemRe);
+    if (match) {
+      let qty = match[2];
+      qty = (CN_NUM[qty] !== undefined) ? CN_NUM[qty] : parseFloat(qty);
+      const name = match[1].replace(/[+＋/／]+/g, '').trim();
+      if (name) {
+        result.push({ id: orderNid++, shop: currentShop, name, qty, unit: match[3], price: '' });
+      }
+    } else {
+      // It's a shop name (skip obvious header lines)
+      if (!/下單|訂單/.test(cleanLine)) {
+        currentShop = cleanLine.replace(/[,，、。：:]+$/, '').trim();
+      }
+    }
+  });
+  return result;
+}
+
+function parseAndPreview() {
+  const raw = document.getElementById('orderRawText').value.trim();
+  if (!raw) { alert('請先貼入下單訊息'); return; }
+  orderNid = 1;
+  orderRows = parseOrderText(raw);
+  if (!orderRows.length) {
+    alert('解析不到任何品項，請確認格式（品名＋數量＋單位，例如：龍葵2斤）');
+    return;
+  }
+  renderOrderPreview();
+  document.getElementById('orderPreviewCard').style.display = 'block';
+  document.getElementById('orderDetailsCard').style.display = 'block';
+  document.getElementById('orderSubmitBtn').style.display = 'flex';
+  document.getElementById('orderPreviewCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderOrderPreview() {
+  const tbody = document.getElementById('orderPreviewBody');
+  tbody.innerHTML = '';
+
+  let total = 0;
+  let shopCount = new Set(orderRows.map(r => r.shop)).size;
+
+  orderRows.forEach((row, idx) => {
+    // Shop header row
+    const prevShop = idx > 0 ? orderRows[idx-1].shop : null;
+    if (row.shop !== prevShop) {
+      const shopTr = document.createElement('tr');
+      shopTr.innerHTML = `<td colspan="7" class="shop-row-header">🏪 ${esc(row.shop || '（未指定店家）')}</td>`;
+      tbody.appendChild(shopTr);
+    }
+
+    const rowSubtotal = (row.qty && row.price) ? (parseFloat(row.qty) * parseFloat(row.price)).toFixed(0) : '';
+    if (rowSubtotal) total += parseFloat(rowSubtotal);
+
+    const unitOpts = ORDER_UNITS.map(u => `<option${u===row.unit?' selected':''}>${u}</option>`).join('');
+    const tr = document.createElement('tr');
+    tr.id = 'order-row-' + row.id;
+    tr.innerHTML = `
+      <td>
+        <input type="text" value="${esc(row.shop)}" placeholder="店家"
+          style="font-size:12px"
+          oninput="updateOrderRow(${row.id},'shop',this.value)" />
+      </td>
+      <td>
+        <input type="text" value="${esc(row.name)}" placeholder="品名"
+          oninput="updateOrderRow(${row.id},'name',this.value)" />
+      </td>
+      <td>
+        <input type="number" min="0" step="0.1" value="${esc(row.qty)}" style="width:72px"
+          oninput="updateOrderRow(${row.id},'qty',this.value)" />
+      </td>
+      <td>
+        <select style="width:72px" onchange="updateOrderRow(${row.id},'unit',this.value)">${unitOpts}</select>
+      </td>
+      <td>
+        <input type="number" min="0" value="${esc(row.price)}" placeholder="—" style="width:80px"
+          oninput="updateOrderRow(${row.id},'price',this.value);updateSubtotal(${row.id})" />
+      </td>
+      <td id="subtotal-${row.id}">
+        ${rowSubtotal ? `<span class="order-total-pill">$${rowSubtotal}</span>` : '<span style="color:var(--gray-400)">—</span>'}
+      </td>
+      <td>
+        <button class="order-remove-btn" onclick="removeOrderRow(${row.id})">×</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Summary bar
+  const shops = [...new Set(orderRows.map(r => r.shop))];
+  document.getElementById('orderSummaryBar').innerHTML =
+    `共 <strong>${orderRows.length}</strong> 項，
+     來自 <strong>${shops.length}</strong> 個店家：${shops.map(s=>esc(s||'未指定')).join('、')}
+     ${total > 0 ? `&nbsp;｜&nbsp; 合計 <strong>$${total}</strong>` : ''}`;
+}
+
+function updateOrderRow(id, field, val) {
+  const row = orderRows.find(r => r.id === id);
+  if (row) row[field] = val;
+  if (field === 'shop') renderOrderPreview(); // re-group headers
+}
+
+function updateSubtotal(id) {
+  const row = orderRows.find(r => r.id === id);
+  if (!row) return;
+  const cell = document.getElementById('subtotal-' + id);
+  if (!cell) return;
+  const sub = (row.qty && row.price) ? (parseFloat(row.qty) * parseFloat(row.price)).toFixed(0) : '';
+  cell.innerHTML = sub ? `<span class="order-total-pill">$${sub}</span>` : '<span style="color:var(--gray-400)">—</span>';
+  // Update summary total
+  let total = 0;
+  orderRows.forEach(r => {
+    if (r.qty && r.price) total += parseFloat(r.qty) * parseFloat(r.price);
+  });
+  const bar = document.getElementById('orderSummaryBar');
+  if (bar) {
+    const shops = [...new Set(orderRows.map(r => r.shop))];
+    bar.innerHTML = `共 <strong>${orderRows.length}</strong> 項，來自 <strong>${shops.length}</strong> 個店家：${shops.map(s=>esc(s||'未指定')).join('、')}${total > 0 ? `&nbsp;｜&nbsp; 合計 <strong>$${Math.round(total)}</strong>` : ''}`;
+  }
+}
+
+function removeOrderRow(id) {
+  orderRows = orderRows.filter(r => r.id !== id);
+  renderOrderPreview();
+}
+
+function addOrderRow() {
+  orderRows.push({ id: orderNid++, shop: '', name: '', qty: '', unit: '斤', price: '' });
+  renderOrderPreview();
+}
+
+async function submitOrder() {
+  if (!WEBHOOK_URL) { showOrderErr('請先在設定中填入 Webhook 網址。'); return; }
+  const validRows = orderRows.filter(r => r.name);
+  if (!validRows.length) { showOrderErr('請至少填寫一項品名。'); return; }
+
+  const registrant = document.getElementById('orderRegistrant').value.trim();
+  const weekDate = document.getElementById('orderWeekDate').value;
+  const deliveryLoc = document.getElementById('orderDeliveryLocation').value.trim();
+  const deliveryTime = document.getElementById('orderDeliveryTime').value.trim();
+  const payStatus = document.getElementById('orderPaymentStatus').value;
+  const batchNote = document.getElementById('orderBatchNote').value.trim();
+  const weekStr = weekDate ? formatDate(weekDate) : '';
+
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 送出中…';
+  hideOrderErr();
+
+  const rows = validRows.map(r => {
+    const subtotal = (r.qty && r.price) ? (parseFloat(r.qty) * parseFloat(r.price)).toFixed(0) : '';
+    return {
+      '登記人': registrant,
+      '店家/料理人': r.shop,
+      '週次': weekStr,
+      '品名': r.name,
+      '數量': r.qty,
+      '單位': r.unit,
+      '單價（元）': r.price,
+      '交易總價': subtotal,
+      '送貨地點': deliveryLoc,
+      '送貨時間': deliveryTime,
+      '付款狀態': payStatus,
+      '備註': batchNote,
+    };
+  });
+
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'order', rows })
+    });
+    document.getElementById('orderFormSection').style.display = 'none';
+    const box = document.getElementById('orderSuccessBox'); box.style.display = 'block';
+    const shops = [...new Set(validRows.map(r => r.shop).filter(Boolean))];
+    document.getElementById('orderSuccessDetail').textContent =
+      `共 ${validRows.length} 項，店家：${shops.join('、') || '未指定'}`;
+  } catch(e) {
+    showOrderErr('連線失敗，請確認網路或 Webhook 設定。');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
+  }
+}
+
+function resetOrderForm() {
+  document.getElementById('orderFormSection').style.display = 'block';
+  document.getElementById('orderSuccessBox').style.display = 'none';
+  document.getElementById('orderRawText').value = '';
+  document.getElementById('orderPreviewCard').style.display = 'none';
+  document.getElementById('orderDetailsCard').style.display = 'none';
+  document.getElementById('orderSubmitBtn').style.display = 'none';
+  orderRows = []; orderNid = 1;
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
+}
+
+function showOrderErr(msg) { const e=document.getElementById('orderErrorMsg'); e.style.display='block'; e.textContent=msg; e.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function hideOrderErr() { document.getElementById('orderErrorMsg').style.display='none'; }
+
+// ════════════════════════════════════════════════════════════
+// ── BROWSE TAB ───────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
 let selectedWeeks = new Set();
-let searchResultsGrouped = {};
-let weeksLoaded = false;
+let editStore = {};
 
 async function loadWeekChips() {
   if (!WEBHOOK_URL) return;
   const chips = document.getElementById('weekChips');
   const refreshBtn = document.getElementById('refreshBtn');
-  
-  chips.innerHTML = '<span style="font-size:12px; color:var(--gray-400);">載入週次清單中…</span>';
+  chips.innerHTML = '<span style="font-size:12px;color:var(--gray-400);">載入中…</span>';
   refreshBtn.style.display = 'none';
-  
   try {
     const res = await fetch(WEBHOOK_URL + '?action=weeks');
     const data = await res.json();
-
-    weeksLoaded = true;
-
     renderWeekChips(data.weeks || []);
-
   } catch(e) {
-    console.error('loadWeekChips', e)
-    chips.innerHTML = '<span style="font-size:12px; color:var(--red-400);">載入失敗</span>';
+    chips.innerHTML = '<span style="font-size:12px;color:var(--red-400);">載入失敗</span>';
   }
-  
   refreshBtn.style.display = 'block';
-}
-
-function getNearestMonday() {
-  const today = new Date();
-  const day = today.getDay(); // 0=日, 1=一, ..., 6=六
-  let diff;
-  if (day === 0) diff = 1;       // 週日 → 下週一
-  else if (day === 6) diff = 2;  // 週六 → 下週一
-  else diff = -(day - 1);        // 週一~五 → 上週一（週一本身是 0）
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diff);
-  return monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
 }
 
 function renderWeekChips(weeks) {
   const container = document.getElementById('weekChips');
   if (!weeks.length) {
-    container.innerHTML = '<span style="color:var(--gray-400);font-size:13px;">目前尚無任何登記資料</span>';
+    container.innerHTML = '<span style="color:var(--gray-400);font-size:13px;">目前尚無資料</span>';
     return;
   }
   container.innerHTML = '';
@@ -1116,136 +1063,105 @@ function renderWeekChips(weeks) {
     btn.className = 'week-chip';
     btn.textContent = w;
     btn.onclick = () => {
-      if (selectedWeeks.has(w)) {
-        selectedWeeks.delete(w);
-        btn.classList.remove('selected');
-      } else {
-        selectedWeeks.add(w);
-        btn.classList.add('selected');
-      }
+      if (selectedWeeks.has(w)) { selectedWeeks.delete(w); btn.classList.remove('active'); }
+      else { selectedWeeks.add(w); btn.classList.add('active'); }
       updateChipsHint();
     };
     container.appendChild(btn);
   });
-  document.getElementById('chipsHint').textContent = '可選擇多個週次一起查詢';
+  document.getElementById('chipsHint').textContent = '可選擇多個週次';
 }
 
 function updateChipsHint() {
   const n = selectedWeeks.size;
-  document.getElementById('chipsHint').textContent =
-    n === 0 ? '可選擇多個週次一起查詢' : `已選 ${n} 個週次`;
-}
- 
-function selectWeekChip(weekStr) {
-  // weekStr format: "2025-05-第3週" — sync back to date picker as best-effort display
-  document.getElementById('browseWeekDate').value = '';
-  // Re-render chips to mark active
-  document.querySelectorAll('.week-chip').forEach(c => {
-    c.classList.toggle('active', c.textContent.trim() === weekStr);
-  });
-  fetchBrowseDataForWeek(weekStr);
+  document.getElementById('chipsHint').textContent = n === 0 ? '可選擇多個週次' : `已選 ${n} 個週次`;
 }
 
 async function refreshWeekChips() {
-  const btn = document.getElementById('refreshBtn');
-  btn.classList.add('spinning');
   weekChipsLoaded = false;
   await loadWeekChips();
   weekChipsLoaded = true;
-  btn.classList.remove('spinning');
 }
+
+
+function getBaseId(rowId) {
+  return String(rowId || '').replace(/-\d+$/, '');
+}
+
 
 async function fetchBrowseData() {
-  const val = document.getElementById('browseWeekDate').value;
-  if (!val) { setBrowseMsg('請先選擇一個日期。'); return; }
-  const weekStr = formatDate(val);
-  // Update chips active state
-  document.querySelectorAll('.week-chip').forEach(c => {
-    c.classList.toggle('active', c.textContent.trim() === weekStr);
-  });
-  await fetchBrowseDataForWeek(weekStr);
-}
-
-async function fetchBrowseDataForWeek(weekStr) {
   if (!WEBHOOK_URL) { setBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
 
   const spinner = document.getElementById('browseSpinner');
   const results = document.getElementById('searchResults');
-  spinner.style.display = 'block';
-  results.innerHTML = '';
-
+  spinner.style.display = 'block'; results.innerHTML = '';
   try {
-    const weeksParam = Array.from(selectedWeeks).join(',');
+    // 合併：日期選擇器的週次 + 已選的 chips
+    const queryWeeks = new Set(selectedWeeks);
+    const val = document.getElementById('browseWeekDate').value;
+    if (val) queryWeeks.add(formatDate(val));
+
+    // 同步 chip 的 active 視覺狀態
+    document.querySelectorAll('#weekChips .week-chip').forEach(c =>
+      c.classList.toggle('active', queryWeeks.has(c.textContent.trim()))
+    );
+
+    const weeksParam = Array.from(queryWeeks).join(',');
     const url = WEBHOOK_URL + '?action=query' + (weeksParam ? '&weeks=' + encodeURIComponent(weeksParam) : '');
     const res = await fetch(url);
     const data = await res.json();
     spinner.style.display = 'none';
-
     renderSearchResults(data.data || []);
   } catch(e) {
-    console.error('fetchBrowseDataForWeek', e);
+    console.error('查詢失敗',e);
     spinner.style.display = 'none';
-    results.innerHTML = `<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定</div>`;
+    results.innerHTML = '<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定</div>';
   }
+}
+
+function prepEditRow(row) {
+  const sid = getBaseId(row['提交ID'] || '');
+  if (!sid) return;
+  if (!editStore[sid]) editStore[sid] = { rows: [] };
+  editStore[sid].rows.push(row);
 }
 
 function renderSearchResults(rows) {
   editStore = {};
   const container = document.getElementById('searchResults');
 
-  if (!rows.length) {
-    container.innerHTML = '<div class="no-results">查無符合條件的登記資料</div>';
-    return;
+  if (!rows.length) { 
+    container.innerHTML = '<div class="browse-empty"><span class="empty-icon">🌱</span>查無符合資料</div>'; 
+    return; 
   }
-
-  // Build editStore keyed by submissionId
-  rows.forEach(r => {
-    const sid = getBaseId(r['提交ID'] || '');
-    if (!sid) return;
-    if (!editStore[sid]) editStore[sid] = { rows: [] };
-    editStore[sid].rows.push(r);
-  });
-
   // Group display by farm
   const farmMap = {};
   const farmOrder = [];
+
+  // Build editStore keyed by submissionId and group order by farm
   rows.forEach(r => {
-    const farm = r['農場'] || '（未填農場）';
-    if (!farmMap[farm]) { farmMap[farm] = []; farmOrder.push(farm); }
-    farmMap[farm].push(r);
+    prepEditRow(r);
+    
+    const f = r['農場'] || '（未填農場）';
+    if (!farmMap[f]) { 
+      farmMap[f] = []; farmOrder.push(f); 
+    }
+    farmMap[f].push(r);
   });
 
   let html = `<div class="browse-summary">共 ${rows.length} 筆 · ${farmOrder.length} 個農場</div>`;
-
   farmOrder.forEach(farm => {
     const farmRows = farmMap[farm];
     const registrant = farmRows[0]['登記人'] || '';
     const note = farmRows[0]['本批備註'] || '';
-
-    html += `<div class="farm-group">
-      <div class="farm-group-header">
-        <span class="farm-name">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 2C5.2 2 3 4.2 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.8-2.2-5-5-5z" stroke="rgba(255,255,255,0.7)" stroke-width="1.3" fill="none"/>
-            <circle cx="8" cy="7" r="1.5" fill="rgba(255,255,255,0.7)"/>
-          </svg>
-          ${esc(farm)}
-        </span>
-        <span class="farm-meta">${registrant ? `登記人：${esc(registrant)}` : ''}<br>${farmRows.length} 項農產品</span>
-      </div>`;
-
-    if (note) {
-      html += `<div class="farm-note-banner">
-        <span class="note-label">📝 備註</span>
-        <span>${esc(note)}</span>
-      </div>`;
-    }
-
-    html += `<table class="browse-table">
-      <thead><tr>
-        <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th></th>
-      </tr></thead>
-      <tbody>`;
+    html += `<div class="farm-group"><div class="farm-group-header">
+      <span class="farm-name">🌿 ${esc(farm)}</span>
+      <span class="farm-meta">${registrant ? `登記人：${esc(registrant)}<br>` : ''}${farmRows.length} 項</span>
+    </div>`;
+    if (note) html += `<div class="farm-note-banner"><span class="note-label">📝</span><span>${esc(note)}</span></div>`;
+    html += `<table class="browse-table"><thead><tr>
+      <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th></th>
+    </tr></thead><tbody>`;
 
     const sidCounters = {};
     farmRows.forEach(r => {
@@ -1254,13 +1170,12 @@ function renderSearchResults(rows) {
       const rowIdx = sidCounters[sid]++;
       const rowId = sid ? `row-${sid}-${rowIdx}` : '';
 
-      const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
+      const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位'] || '')}` : '—';
       const purchaseHtml = `
         <div style="margin-bottom:4px">${r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—'}</div>
         <div>${r['批價']
-          ? `<span class="wholesale-pill">批價 $${esc(r['批價'])}${r['批價門檻'] ? ` / ${esc(r['批價門檻'])} ${esc(r['單位']||'')} 起` : ''}</span>`
-          : '<span style="color:var(--gray-400)">—</span>'
-        }</div>`;
+          ? `<span class="wholesale-pill">批 $${esc(r['批價'])}${r['批價門檻'] ? ` / ${esc(r['批價門檻'])}起` : ''}</span>`
+          : '<span style="color:var(--gray-400)">—</span>'}</div>`;
       const retailHtml = r['末端建議售價']
         ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
         : '<span style="color:var(--gray-400)">—</span>';
@@ -1275,19 +1190,17 @@ function renderSearchResults(rows) {
         <td style="text-align:center;width:36px">${editBtn}</td>
       </tr>`;
     });
-
     html += `</tbody></table></div>`;
   });
-
   container.innerHTML = html;
 }
 
-// ── Row-level edit (browse tab) ─────────────────────────────────────────────
-let editStore = {};
-
-function getBaseId(rowId) {
-  return String(rowId || '').replace(/-\d+$/, '');
+function setBrowseMsg(msg) {
+  document.getElementById('browseResults').innerHTML =
+    `<div class="browse-empty"><span class="empty-icon">🌶️</span>${msg}</div>`;
 }
+
+// ── Row-level edit (browse tab) ─────────────────────────────────────────────
 
 function editRow(sid, rowIdx) {
   const data = editStore[sid];
@@ -1295,7 +1208,10 @@ function editRow(sid, rowIdx) {
   const r = data.rows[rowIdx];
   const rowId = `row-${sid}-${rowIdx}`;
   const tr = document.getElementById(rowId);
-  if (!tr) return;
+  if (!tr) {
+    console.log('rowId', rowId, 'not found')
+    return;
+  }
 
   const unitOpts = UNITS.map(u => `<option${u === (r['單位']||'公斤') ? ' selected' : ''}>${u}</option>`).join('');
   tr.innerHTML = `
@@ -1356,7 +1272,7 @@ function restoreRow(sid, rowIdx) {
     <td>${purchaseHtml}</td>
     <td>${retailHtml}</td>
     <td style="text-align:center;width:36px">
-      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✏</button>
+      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎ㄐ</button>
     </td>`;
 }
 
@@ -1407,154 +1323,190 @@ async function saveRow(sid, rowIdx) {
   }
 }
 
-function setBrowseMsg(msg) {
-  document.getElementById('browseResults').innerHTML =
-    `<div class="browse-empty"><span class="empty-icon">🌶️</span>${msg}</div>`;
-}
+// ════════════════════════════════════════════════════════════
+// ── BROWSE SUB-TABS ──────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+let currentBrowseSub = 'farm';
+let orderWeekChipsLoaded = false;
+let selectedOrderWeeks = new Set();
 
-// ── Order Input (LINE message parsing) ────────────────────────────────────────
-const CN_NUM_MAP = {'半':0.5,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
-let parsedOrders = [];
-let orderNid = 1;
-
-function parseLineMessage(text) {
-  const unitPat = UNITS.join('|');
-  // 不加 $ — 允許結尾有價格或備注，例如「1斤140元」「3支（明天秤）」
-  const itemRe = new RegExp('^(.+?)\\s*[/+]?\\s*([半一二三四五六七八九十\\d.]+)('+unitPat+')');
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  const results = [];
-  let currentShop = '';
-  for (const line of lines) {
-    const m = itemRe.exec(line);
-    if (m) {
-      const name = m[1].trim();
-      const qtyStr = m[2];
-      const unit = m[3];
-      const qty = /^[\d.]+$/.test(qtyStr) ? parseFloat(qtyStr) : (CN_NUM_MAP[qtyStr] || 1);
-      results.push({ id: orderNid++, shop: currentShop, name, qty, unit });
-    } else if (currentShop && /\d/.test(line)) {
-      // 有數字但沒找到有效單位（如「紅蘿蔔300元」）—當品項，數量/單位留空讓使用者補
-      results.push({ id: orderNid++, shop: currentShop, name: line, qty: '', unit: '' });
-    } else {
-      currentShop = line;
-    }
+function switchBrowseSubTab(sub) {
+  currentBrowseSub = sub;
+  document.getElementById('browsePanelFarm').style.display  = sub === 'farm'  ? '' : 'none';
+  document.getElementById('browsePanelOrder').style.display = sub === 'order' ? '' : 'none';
+  document.getElementById('subTabFarm').classList.toggle('active', sub === 'farm');
+  document.getElementById('subTabOrder').classList.toggle('active', sub === 'order');
+  if (sub === 'order' && !orderWeekChipsLoaded) {
+    loadOrderWeekChips();
+    orderWeekChipsLoaded = true;
+    if (!document.getElementById('orderBrowseWeekDate').value)
+      document.getElementById('orderBrowseWeekDate').value = getNearestMonday();
   }
-  return results;
 }
 
-function updateOrderItem(id, field, value) {
-  const item = parsedOrders.find(o => o.id === id);
-  if (item) item[field] = value;
+// ── Order week chips ─────────────────────────────────────────
+async function loadOrderWeekChips() {
+  if (!WEBHOOK_URL) return;
+  const chips = document.getElementById('orderWeekChips');
+  const refreshBtn = document.getElementById('orderRefreshBtn');
+  chips.innerHTML = '<span style="font-size:12px;color:var(--gray-400);">載入中…</span>';
+  refreshBtn.style.display = 'none';
+  try {
+    const res = await fetch(WEBHOOK_URL + '?action=orderWeeks');
+    const data = await res.json();
+    renderOrderWeekChips(data.weeks || []);
+  } catch(e) {
+    chips.innerHTML = '<span style="font-size:12px;color:var(--red-400);">載入失敗</span>';
+  }
+  refreshBtn.style.display = 'block';
 }
 
-function removeOrderItem(id) {
-  parsedOrders = parsedOrders.filter(o => o.id !== id);
-  renderOrderPreview();
-}
-
-function parseAndPreview() {
-  const text = document.getElementById('lineMsg').value;
-  if (!text.trim()) { showOrderErr('請先貼上 LINE 訊息'); return; }
-  parsedOrders = parseLineMessage(text);
-  if (!parsedOrders.length) {
-    showOrderErr('無法解析到任何品項。格式範例：「龍葵2斤」或「紅蘿蔔 +2包」');
+function renderOrderWeekChips(weeks) {
+  const container = document.getElementById('orderWeekChips');
+  if (!weeks.length) {
+    container.innerHTML = '<span style="color:var(--gray-400);font-size:13px;">目前尚無訂單資料</span>';
     return;
   }
-  clearOrderErr();
-  renderOrderPreview();
-  document.getElementById('orderPreviewSection').style.display = '';
-  document.getElementById('orderPreviewSection').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function renderOrderPreview() {
-  const shops = [...new Set(parsedOrders.map(o => o.shop))];
-  document.getElementById('orderPreviewCount').textContent =
-    `（${parsedOrders.length} 筆 · ${shops.length} 個店家）`;
-  let html = '';
-  shops.forEach(shop => {
-    const items = parsedOrders.filter(o => o.shop === shop);
-    const unitOpts = u => UNITS.map(u2 => `<option${u2===u?' selected':''}>${u2}</option>`).join('');
-    html += `<div class="order-shop-group">
-      <div class="order-shop-header">${esc(shop || '（未指定店家）')}</div>
-      <table class="order-preview-table">
-        <thead><tr><th>品名</th><th>數量</th><th>單位</th><th></th></tr></thead>
-        <tbody>`;
-    items.forEach(o => {
-      html += `<tr>
-        <td><input type="text" value="${esc(o.name)}"
-          oninput="updateOrderItem(${o.id},'name',this.value)" /></td>
-        <td><input type="number" value="${o.qty}" min="0" step="0.5"
-          oninput="updateOrderItem(${o.id},'qty',parseFloat(this.value)||0)" /></td>
-        <td><select onchange="updateOrderItem(${o.id},'unit',this.value)">${unitOpts(o.unit)}</select></td>
-        <td><button class="order-del-btn" onclick="removeOrderItem(${o.id})">×</button></td>
-      </tr>`;
-    });
-    html += '</tbody></table></div>';
+  container.innerHTML = '';
+  weeks.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'week-chip';
+    btn.textContent = w;
+    btn.onclick = () => {
+      if (selectedOrderWeeks.has(w)) { selectedOrderWeeks.delete(w); btn.classList.remove('active'); }
+      else { selectedOrderWeeks.add(w); btn.classList.add('active'); }
+      updateOrderChipsHint();
+    };
+    container.appendChild(btn);
   });
-  document.getElementById('orderPreviewContent').innerHTML = html;
+  document.getElementById('orderChipsHint').textContent = '可選擇多個週次';
 }
 
-async function submitOrder() {
-  if (!WEBHOOK_URL) { showOrderErr('請先在右上角設定中填入 Webhook 網址。'); return; }
-  const registrant = document.getElementById('orderRegister').value.trim();
-  const weekDate   = document.getElementById('orderWeekDate').value;
-  if (!weekDate) { showOrderErr('請填寫週次'); document.getElementById('orderWeekDate').focus(); return; }
-  if (!parsedOrders.length) { showOrderErr('沒有可送出的品項'); return; }
+function updateOrderChipsHint() {
+  const n = selectedOrderWeeks.size;
+  document.getElementById('orderChipsHint').textContent = n === 0 ? '可選擇多個週次' : `已選 ${n} 個週次`;
+}
 
-  const btn = document.getElementById('orderSubmitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> 送出中…';
-  clearOrderErr();
+async function refreshOrderWeekChips() {
+  orderWeekChipsLoaded = false;
+  await loadOrderWeekChips();
+  orderWeekChipsLoaded = true;
+}
 
-  const ts = new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei'});
-  const weekStr = formatDate(weekDate);
-  const rows = parsedOrders.map(o => ({
-    時間戳記: ts, 登記人: registrant, 店家料理人: o.shop,
-    週次: weekStr, 品名: o.name, 數量: o.qty, 單位: o.unit,
-    單價: '', 交易總價: '', 送貨地點: '', 送貨時間: '', 付款狀態: '', 備註: '',
-  }));
+// ── Order browse query ───────────────────────────────────────
+async function fetchOrderBrowseData() {
+  const val = document.getElementById('orderBrowseWeekDate').value;
+  if (val) {
+    const ws = formatDate(val);
+    document.querySelectorAll('#orderWeekChips .week-chip').forEach(c =>
+      c.classList.toggle('active', c.textContent.trim() === ws)
+    );
+  }
+  if (!WEBHOOK_URL) { setBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
+  const spinner = document.getElementById('orderBrowseSpinner');
+  const results = document.getElementById('orderSearchResults');
+  spinner.style.display = 'block'; results.innerHTML = '';
 
   try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({action:'order', rows}),
-    });
-    const result = await res.json();
-    if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
-    clearOrderErr();
-    document.getElementById('orderFormSection').style.display = 'none';
-    const box = document.getElementById('orderSuccessBox');
-    box.style.display = 'block';
-    box.scrollIntoView({behavior:'smooth', block:'start'});
-    const shops = [...new Set(parsedOrders.map(o => o.shop))].filter(Boolean);
-    document.getElementById('orderSuccessDetail').textContent =
-      `共 ${parsedOrders.length} 筆，${shops.length} 個店家：${shops.join('、')}。`;
+    const weeksParam = Array.from(selectedOrderWeeks).join(',');
+    const shopFilter = document.getElementById('orderShopFilter').value.trim();
+    let url = WEBHOOK_URL + '?action=orderQuery';
+    if (weeksParam) url += '&weeks=' + encodeURIComponent(weeksParam);
+    if (shopFilter) url += '&shop=' + encodeURIComponent(shopFilter);
+    const res = await fetch(url);
+    const data = await res.json();
+    spinner.style.display = 'none';
+    renderOrderBrowseResults(data.data || []);
   } catch(e) {
-    showOrderErr(`連線失敗：${e.message}`);
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
+    spinner.style.display = 'none';
+    results.innerHTML = '<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定</div>';
   }
 }
 
-function resetOrder() {
-  document.getElementById('orderFormSection').style.display = '';
-  document.getElementById('orderSuccessBox').style.display = 'none';
-  document.getElementById('lineMsg').value = '';
-  document.getElementById('orderPreviewSection').style.display = 'none';
-  parsedOrders = [];
-  const btn = document.getElementById('orderSubmitBtn');
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L17 9L9 17" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 9h16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> 送出訂單';
-}
+function renderOrderBrowseResults(rows) {
+  const container = document.getElementById('orderSearchResults');
+  if (!rows.length) {
+    container.innerHTML = '<div class="browse-empty"><span class="empty-icon">🧾</span>查無符合條件的訂單資料</div>';
+    return;
+  }
 
-function showOrderErr(msg) {
-  const e = document.getElementById('orderErrorMsg');
-  e.style.display = 'block'; e.textContent = msg;
-  e.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-function clearOrderErr() {
-  document.getElementById('orderErrorMsg').style.display = 'none';
+  // Group by shop
+  const shopMap = {};
+  const shopOrder = [];
+  rows.forEach(r => {
+    const shop = r['店家/料理人'] || '（未填店家）';
+    if (!shopMap[shop]) { shopMap[shop] = []; shopOrder.push(shop); }
+    shopMap[shop].push(r);
+  });
+
+  // Calculate total (if prices filled)
+  let grandTotal = 0;
+  rows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) grandTotal += t; });
+
+  let html = `<div class="order-browse-summary">
+    共 ${rows.length} 筆 · ${shopOrder.length} 個店家
+    ${grandTotal > 0 ? ` · 合計 <strong style="color:var(--red-600)">$${Math.round(grandTotal)}</strong>` : ''}
+  </div>`;
+
+  shopOrder.forEach(shop => {
+    const shopRows = shopRows2 = shopMap[shop];
+    const firstRow = shopRows[0];
+    const week = firstRow['週次'] || '';
+    const registrant = firstRow['登記人'] || '';
+    const deliveryLoc = firstRow['送貨地點'] || '';
+    const deliveryTime = firstRow['送貨時間'] || '';
+
+    // Shop total
+    let shopTotal = 0;
+    shopRows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) shopTotal += t; });
+
+    html += `<div class="order-group">
+      <div class="order-group-header">
+        <span class="shop-name">🏪 ${esc(shop)}</span>
+        <span class="shop-meta">
+          ${week ? `${esc(week)}<br>` : ''}
+          ${shopRows.length} 項${shopTotal > 0 ? ` · $${Math.round(shopTotal)}` : ''}
+        </span>
+      </div>`;
+
+    if (deliveryLoc || deliveryTime) {
+      html += `<div class="order-group-delivery">`;
+      if (deliveryLoc) html += `<span>📍 ${esc(deliveryLoc)}</span>`;
+      if (deliveryTime) html += `<span>🕐 ${esc(deliveryTime)}</span>`;
+      html += `</div>`;
+    }
+
+    html += `<table class="order-browse-table">
+      <thead><tr>
+        <th>品名</th><th>數量</th><th>單價</th><th>小計</th><th>付款</th><th>備註</th>
+      </tr></thead><tbody>`;
+
+    shopRows.forEach(r => {
+      const qty  = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
+      const price = r['單價（元）'] ? `$${esc(r['單價（元）'])}` : '—';
+      const total = r['交易總價'] ? `<strong>$${esc(r['交易總價'])}</strong>` : '—';
+      const note  = r['備註'] ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
+
+      const payStatus = r['付款狀態'] || '';
+      let payClass = 'none', payLabel = payStatus || '未設定';
+      if (payStatus === '待付款')  { payClass = 'pending'; }
+      else if (payStatus === '已付款')  { payClass = 'paid'; }
+      else if (payStatus === '貨到付款') { payClass = 'cod'; }
+
+      html += `<tr>
+        <td>${esc(r['品名']||'')}</td>
+        <td>${qty}</td>
+        <td>${price}</td>
+        <td>${total}</td>
+        <td><span class="pay-pill ${payClass}">${esc(payLabel)}</span></td>
+        <td>${note}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  });
+
+  container.innerHTML = html;
 }
 </script>
 </body>
