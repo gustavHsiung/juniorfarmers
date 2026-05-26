@@ -331,7 +331,7 @@ function renderSearchResults(rows) {
         ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['實際出貨價'])}</span>`
         : '<span style="color:var(--gray-400)">—</span>';
       const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
-      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✏</button>` : '';
+      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
 
       html += `<tr${rowId ? ` id="${rowId}"` : ''}>
         <td>${esc(r['品名'] || '')}${itemNote}</td>
@@ -424,7 +424,7 @@ function restoreRow(sid, rowIdx) {
     <td>${retailHtml}</td>
     <td>${actualHtml}</td>
     <td style="text-align:center;width:36px">
-      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✏</button>
+      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
     </td>`;
 }
 
@@ -461,6 +461,7 @@ async function saveRow(sid, rowIdx) {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'updateRow',
+        target:'農場菜單',
         提交ID: originalRow['提交ID'],
         row: { 品名: name, 數量: qty, 單位: unit,
                基本進貨價: price, 批價: wp, 批價門檻: wt,

@@ -33,24 +33,33 @@ let orderNid  = 1;
 
 function parseOrderText(rawText) {
   const unitRe = ORDER_UNITS.join('|');
-  const numRe  = '\\d+(?:\\.\\d+)?|[一二三四五六七八九十半]';
+  const numRe = '\\d+(?:\\.\\d+)?|[一二三四五六七八九十半]';
   const itemRe = new RegExp(`^(.+?)[/／\\s+＋]*(${numRe})(${unitRe})\\s*$`);
+
   const result = [];
   let currentShop = '';
 
   rawText.split('\n').forEach(line => {
     line = line.trim();
     if (!line) return;
+
+    // Remove leading + / ＋
     const cleanLine = line.replace(/^[+＋]+\s*/, '');
+
+    // Try to match item pattern
     const match = cleanLine.match(itemRe);
     if (match) {
       let qty = match[2];
       qty = (CN_NUM[qty] !== undefined) ? CN_NUM[qty] : parseFloat(qty);
       const name = match[1].replace(/[+＋/／]+/g, '').trim();
-      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty, unit: match[3], price: '' });
+      if (name) {
+        result.push({ id: orderNid++, shop: currentShop, name, qty, unit: match[3], price: '' });
+      }
     } else {
-      if (!/下單|訂單/.test(cleanLine))
+      // It's a shop name (skip obvious header lines)
+      if (!/下單|訂單/.test(cleanLine)) {
         currentShop = cleanLine.replace(/[,，、。：:]+$/, '').trim();
+      }
     }
   });
   return result;
@@ -284,6 +293,7 @@ async function refreshOrderWeekChips() {
   orderWeekChipsLoaded = true;
 }
 
+// ── Order browse query ───────────────────────────────────────
 async function fetchOrderBrowseData() {
   const val = document.getElementById('orderBrowseWeekDate').value;
   if (val) {
@@ -292,7 +302,7 @@ async function fetchOrderBrowseData() {
       c.classList.toggle('active', c.textContent.trim() === ws)
     );
   }
-  if (!WEBHOOK_URL) { return; }
+  if (!WEBHOOK_URL) { setBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
   const spinner = document.getElementById('orderBrowseSpinner');
   const results = document.getElementById('orderSearchResults');
   spinner.style.display = 'block'; results.innerHTML = '';
@@ -302,8 +312,8 @@ async function fetchOrderBrowseData() {
     const shopFilter = document.getElementById('orderShopFilter').value.trim();
     let url = WEBHOOK_URL + '?action=orderQuery';
     if (weeksParam) url += '&weeks=' + encodeURIComponent(weeksParam);
-    if (shopFilter) url += '&shop='  + encodeURIComponent(shopFilter);
-    const res  = await fetch(url);
+    if (shopFilter) url += '&shop=' + encodeURIComponent(shopFilter);
+    const res = await fetch(url);
     const data = await res.json();
     spinner.style.display = 'none';
     renderOrderBrowseResults(data.data || []);
@@ -320,13 +330,16 @@ function renderOrderBrowseResults(rows) {
     return;
   }
 
-  const shopMap = {}, shopOrder = [];
+  // Group by shop
+  const shopMap = {};
+  const shopOrder = [];
   rows.forEach(r => {
     const shop = r['店家/料理人'] || '（未填店家）';
     if (!shopMap[shop]) { shopMap[shop] = []; shopOrder.push(shop); }
     shopMap[shop].push(r);
   });
 
+  // Calculate total (if prices filled)
   let grandTotal = 0;
   rows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) grandTotal += t; });
 
@@ -336,11 +349,14 @@ function renderOrderBrowseResults(rows) {
   </div>`;
 
   shopOrder.forEach(shop => {
-    const shopRows    = shopMap[shop];
-    const firstRow    = shopRows[0];
-    const week        = firstRow['週次'] || '';
+    const shopRows = shopRows2 = shopMap[shop];
+    const firstRow = shopRows[0];
+    const week = firstRow['週次'] || '';
+    const registrant = firstRow['登記人'] || '';
     const deliveryLoc = firstRow['送貨地點'] || '';
-    const deliveryTime= firstRow['送貨時間'] || '';
+    const deliveryTime = firstRow['送貨時間'] || '';
+
+    // Shop total
     let shopTotal = 0;
     shopRows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) shopTotal += t; });
 
@@ -352,34 +368,48 @@ function renderOrderBrowseResults(rows) {
           ${shopRows.length} 項${shopTotal > 0 ? ` · $${Math.round(shopTotal)}` : ''}
         </span>
       </div>`;
+
     if (deliveryLoc || deliveryTime) {
       html += `<div class="order-group-delivery">`;
-      if (deliveryLoc)  html += `<span>📍 ${esc(deliveryLoc)}</span>`;
+      if (deliveryLoc) html += `<span>📍 ${esc(deliveryLoc)}</span>`;
       if (deliveryTime) html += `<span>🕐 ${esc(deliveryTime)}</span>`;
       html += `</div>`;
     }
-    html += `<table class="order-browse-table">
-      <thead><tr><th>品名</th><th>數量</th><th>單價</th><th>小計</th><th>付款</th><th>備註</th></tr></thead>
-      <tbody>`;
 
-    shopRows.forEach(r => {
-      const qty   = r['數量']    ? `${esc(r['數量'])} ${esc(r['單位'] || '')}` : '—';
+    html += `<table class="order-browse-table">
+      <thead><tr>
+        <th>品名</th><th>數量</th><th>單價</th><th>小計</th><th>付款</th><th>備註</th><th></th>
+      </tr></thead><tbody>`;
+
+    shopRows.forEach((r, rowIdx) => {
+      const sid = getBaseId(r['提交ID'] || '');
+      const shop  = r['店家'];
+      const qty  = r['數量'] ?   `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
       const price = r['單價（元）'] ? `$${esc(r['單價（元）'])}` : '—';
       const total = r['交易總價'] ? `<strong>$${esc(r['交易總價'])}</strong>` : '—';
-      const note  = r['備註']    ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
+      const note  = r['備註'] ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
+
       const payStatus = r['付款狀態'] || '';
-      let payClass = 'none';
-      if (payStatus === '待付款')  payClass = 'pending';
-      else if (payStatus === '已付款')   payClass = 'paid';
-      else if (payStatus === '貨到付款') payClass = 'cod';
+      let payClass = 'none', payLabel = payStatus || '未設定';
+      if (payStatus === '待付款')  { payClass = 'pending'; }
+      else if (payStatus === '已付款')  { payClass = 'paid'; }
+      else if (payStatus === '貨到付款') { payClass = 'cod'; }
+
+      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+
       html += `<tr>
-        <td>${esc(r['品名'] || '')}</td>
-        <td>${qty}</td><td>${price}</td><td>${total}</td>
-        <td><span class="pay-pill ${payClass}">${esc(payStatus || '未設定')}</span></td>
+        <td>${esc(r['品名']||'')}</td>
+        <td>${qty}</td>
+        <td>${price}</td>
+        <td>${total}</td>
+        <td><span class="pay-pill ${payClass}">${esc(payLabel)}</span></td>
         <td>${note}</td>
+        <td style="text-align:center;width:36px">${editBtn}</td>
       </tr>`;
     });
+
     html += `</tbody></table></div>`;
   });
+
   container.innerHTML = html;
 }

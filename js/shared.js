@@ -5,7 +5,7 @@
 const FORM_VERSION = 'v1.0.1';
 
 // 供應表單用單位（farm tab 共用）
-const UNITS = ['公斤','台斤','顆','束','盒','袋','打','斤','份'];
+const UNITS = ['公斤','台斤','公克','顆','束','盒','袋','包','打','斤','份', '支'];
 
 let WEBHOOK_URL = localStorage.getItem('webhookUrl') || '';
 

@@ -140,6 +140,7 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
 .submit-btn.red-btn { background: var(--red-600); }
 .submit-btn.red-btn:hover { background: var(--red-800); }
+.row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: darkgreen;}
 
 /* ── Feedback ── */
 .success-box { display: none; background: var(--green-50); border: 1.5px solid var(--green-100); border-radius: 12px; padding: 1.25rem 1.1rem; text-align: center; }
@@ -184,6 +185,8 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .wholesale-pill { display: inline-block; background: #FFF4E0; border: 1px solid #E8C060; border-radius: 5px; padding: 1px 6px; font-size: 12px; color: #A0600A; font-weight: 600; }
 .item-note-badge { font-size: 11px; color: var(--gray-400); font-style: italic; margin-top: 2px; }
 .browse-summary { font-size: 12px; color: var(--gray-400); padding: 0.6rem 0 0.2rem; text-align: right; }
+
+.order-browse-table .row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: var(--red-600);}
 
 /* ── Order entry ── */
 .order-raw-textarea {
@@ -264,6 +267,7 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .order-browse-filter { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .order-browse-filter .field { flex: 1; margin-bottom: 0; }
 .order-browse-filter input { font-size: 14px; padding: 9px 12px; }
+.orderSearchResults .row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: darkgreen;}
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
