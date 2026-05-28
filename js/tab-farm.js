@@ -1,5 +1,5 @@
 // =============================================
-// tab-farm.js — 農場登記 + 農場瀏覽 / 編輯  v1.0.1
+// tab-farm.js — 農場登記 + 農場瀏覽 / 編輯  v1.0.2
 // 依賴：shared.js（UNITS, WEBHOOK_URL, formatDate,
 //                  getNearestMonday, esc）
 // =============================================
@@ -86,8 +86,8 @@ function renderItems() {
             <input type="number" min="0" value="${esc(item.retailPrice)}" placeholder="建議零售價"
               onchange="updateItem(${item.id},'retailPrice',this.value)"
               oninput="updateItem(${item.id},'retailPrice',this.value)"/></div>
-          <div class="extra-field"><label>實際出貨價（元）</label>
-            <input type="number" min="0" value="${esc(item.actualPrice)}" placeholder="實際出貨價"
+          <div class="extra-field"><label>農二出貨價（元）</label>
+            <input type="number" min="0" value="${esc(item.actualPrice)}" placeholder="農二出貨價"
               onchange="updateItem(${item.id},'actualPrice',this.value)"
               oninput="updateItem(${item.id},'actualPrice',this.value)"/></div>
         </div>
@@ -131,7 +131,7 @@ async function handleSubmit() {
     時間戳記: ts, 登記人: name, 農場: farm,
     週次: formatDate(weekDate), 品名: i.name, 數量: i.qty, 單位: i.unit,
     基本進貨價: i.price, 批價: i.wholesalePrice, 批價門檻: i.wholesaleThreshold,
-    末端建議售價: i.retailPrice, 實際出貨價: i.actualPrice, 品項備注: i.itemNote,
+    末端建議售價: i.retailPrice, 農二出貨價: i.actualPrice, 品項備注: i.itemNote,
     備註: idx === 0 ? document.getElementById('notes').value.trim() : '',
   }));
 
@@ -281,6 +281,7 @@ function prepEditRow(row) {
 }
 
 function renderSearchResults(rows) {
+  console.log('test');
   editStore = {};
   const container = document.getElementById('searchResults');
   if (!rows.length) {
@@ -308,7 +309,7 @@ function renderSearchResults(rows) {
       </div>`;
     if (note) html += `<div class="farm-note-banner"><span class="note-label">📝</span><span>${esc(note)}</span></div>`;
     html += `<table class="browse-table"><thead><tr>
-      <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th>實際出貨價</th><th></th>
+      <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th>農二出貨價</th><th></th>
     </tr></thead><tbody>`;
 
     const sidCounters = {};
@@ -327,8 +328,8 @@ function renderSearchResults(rows) {
       const retailHtml = r['末端建議售價']
         ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
         : '<span style="color:var(--gray-400)">—</span>';
-      const actualHtml = r['實際出貨價']
-        ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['實際出貨價'])}</span>`
+      const actualHtml = r['農二出貨價']
+        ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['農二出貨價'])}</span>`
         : '<span style="color:var(--gray-400)">—</span>';
       const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
       const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
@@ -349,6 +350,7 @@ function renderSearchResults(rows) {
 
 // ── 列編輯 ────────────────────────────────────
 function editRow(sid, rowIdx) {
+  console.log('test');
   const data = editStore[sid];
   if (!data) return;
   const r     = data.rows[rowIdx];
@@ -356,18 +358,24 @@ function editRow(sid, rowIdx) {
   const tr    = document.getElementById(rowId);
   if (!tr) return;
 
+  const thead = tr.closest('table').querySelector('thead');
+  if (thead) thead.style.display = 'none';
+
   const unitOpts = UNITS.map(u =>
     `<option${u === (r['單位'] || '公斤') ? ' selected' : ''}>${u}</option>`).join('');
 
   tr.innerHTML = `
     <td colspan="5" style="padding:8px 6px">
       <div class="item-row" style="margin-bottom:8px">
-        <input type="text" id="ei-name-${rowId}" value="${esc(r['品名'] || '')}" placeholder="品名 *" />
-        <div class="qty-wrap">
-          <input type="number" id="ei-qty-${rowId}" min="0" value="${esc(r['數量'] || '')}" placeholder="數量" />
-          <select id="ei-unit-${rowId}">${unitOpts}</select>
-        </div>
-        <input type="number" id="ei-price-${rowId}" min="0" value="${esc(r['基本進貨價'] || '')}" placeholder="進貨價 *" />
+        <div class="extra-field"><label>品名 *</label>
+          <input type="text" id="ei-name-${rowId}" value="${esc(r['品名'] || '')}" placeholder="品名 *" /></div>
+        <div class="extra-field"><label>數量</label>
+          <div class="qty-wrap">
+            <input type="number" id="ei-qty-${rowId}" min="0" value="${esc(r['數量'] || '')}" placeholder="數量" />
+            <select id="ei-unit-${rowId}">${unitOpts}</select>
+          </div></div>
+        <div class="extra-field"><label>基本進貨價 (元) *</label>
+          <input type="number" id="ei-price-${rowId}" min="0" value="${esc(r['基本進貨價'] || '')}" placeholder="進貨價 *" /></div>
       </div>
       <div class="item-extras-grid" style="margin-bottom:6px">
         <div class="extra-field"><label>批價（元）</label>
@@ -376,8 +384,8 @@ function editRow(sid, rowIdx) {
           <input type="number" id="ei-wt-${rowId}" min="0" value="${esc(r['批價門檻'] || '')}" placeholder="批量起訂" /></div>
         <div class="extra-field"><label>末端建議售價</label>
           <input type="number" id="ei-rp-${rowId}" min="0" value="${esc(r['末端建議售價'] || '')}" placeholder="零售價" /></div>
-        <div class="extra-field"><label>實際出貨價</label>
-          <input type="number" id="ei-ap-${rowId}" min="0" value="${esc(r['實際出貨價'] || '')}" placeholder="實際出貨價" /></div>
+        <div class="extra-field"><label>農二出貨價</label>
+          <input type="number" id="ei-ap-${rowId}" min="0" value="${esc(r['農二出貨價'] || '')}" placeholder="農二出貨價" /></div>
       </div>
       <div class="item-note-field"><label>品項備注</label>
         <textarea id="ei-note-${rowId}" style="min-height:32px">${esc(r['品項備注'] || '')}</textarea>
@@ -403,6 +411,9 @@ function restoreRow(sid, rowIdx) {
   const tr    = document.getElementById(rowId);
   if (!tr) return;
 
+  const thead = tr.closest('table').querySelector('thead');
+  if (thead) thead.style.display = '';
+
   const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位'] || '')}` : '—';
   const purchaseHtml = `
     <div style="margin-bottom:4px">${r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—'}</div>
@@ -412,8 +423,8 @@ function restoreRow(sid, rowIdx) {
   const retailHtml = r['末端建議售價']
     ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
     : '<span style="color:var(--gray-400)">—</span>';
-  const actualHtml = r['實際出貨價']
-    ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['實際出貨價'])}</span>`
+  const actualHtml = r['農二出貨價']
+    ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['農二出貨價'])}</span>`
     : '<span style="color:var(--gray-400)">—</span>';
   const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
 
@@ -424,7 +435,7 @@ function restoreRow(sid, rowIdx) {
     <td>${retailHtml}</td>
     <td>${actualHtml}</td>
     <td style="text-align:center;width:36px">
-      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
+      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎:D</button>
     </td>`;
 }
 
@@ -453,7 +464,7 @@ async function saveRow(sid, rowIdx) {
   const updatedRow  = { ...originalRow,
     品名: name, 數量: qty, 單位: unit,
     基本進貨價: price, 批價: wp, 批價門檻: wt,
-    末端建議售價: rp, 實際出貨價: ap, 品項備注: note };
+    末端建議售價: rp, 農二出貨價: ap, 品項備注: note };
 
   try {
     const res = await fetch(WEBHOOK_URL, {
@@ -465,7 +476,7 @@ async function saveRow(sid, rowIdx) {
         提交ID: originalRow['提交ID'],
         row: { 品名: name, 數量: qty, 單位: unit,
                基本進貨價: price, 批價: wp, 批價門檻: wt,
-               末端建議售價: rp, 實際出貨價: ap, 品項備注: note },
+               末端建議售價: rp, 農二出貨價: ap, 品項備注: note },
       }),
     });
     const result = await res.json();

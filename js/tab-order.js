@@ -188,7 +188,7 @@ async function submitOrder() {
     return {
       '登記人': registrant, '店家/料理人': r.shop, '週次': weekStr,
       '品名': r.name, '數量': r.qty, '單位': r.unit,
-      '單價（元）': r.price, '交易總價': subtotal,
+      '單價（元）': r.price, '小記': subtotal,
       '送貨地點': deliveryLoc, '送貨時間': deliveryTime,
       '付款狀態': payStatus, '備註': batchNote,
     };
@@ -341,7 +341,7 @@ function renderOrderBrowseResults(rows) {
 
   // Calculate total (if prices filled)
   let grandTotal = 0;
-  rows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) grandTotal += t; });
+  rows.forEach(r => { const t = parseFloat(r['小記']); if (!isNaN(t)) grandTotal += t; });
 
   let html = `<div class="order-browse-summary">
     共 ${rows.length} 筆 · ${shopOrder.length} 個店家
@@ -386,7 +386,7 @@ function renderOrderBrowseResults(rows) {
       const shop  = r['店家'];
       const qty  = r['數量'] ?   `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
       const price = r['單價（元）'] ? `$${esc(r['單價（元）'])}` : '—';
-      const total = r['交易總價'] ? `<strong>$${esc(r['交易總價'])}</strong>` : '—';
+      const total = r['小記'] ? `<strong>$${esc(r['小記'])}</strong>` : '—';
       const note  = r['備註'] ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
 
       const payStatus = r['付款狀態'] || '';
@@ -395,7 +395,7 @@ function renderOrderBrowseResults(rows) {
       else if (payStatus === '已付款')  { payClass = 'paid'; }
       else if (payStatus === '貨到付款') { payClass = 'cod'; }
 
-      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
 
       html += `<tr>
         <td>${esc(r['品名']||'')}</td>
@@ -412,4 +412,135 @@ function renderOrderBrowseResults(rows) {
   });
 
   container.innerHTML = html;
+}
+
+// ── 列編輯 ────────────────────────────────────
+function editOrderRow(sid, rowIdx) {
+  const data = editStore[sid];
+  if (!data) return;
+  const r     = data.rows[rowIdx];
+  const rowId = `row-${sid}-${rowIdx}`;
+  const tr    = document.getElementById(rowId);
+  if (!tr) return;
+
+  const unitOpts = UNITS.map(u =>
+    `<option${u === (r['單位'] || '公斤') ? ' selected' : ''}>${u}</option>`).join('');
+
+  tr.innerHTML = `
+    <td colspan="5" style="padding:8px 6px">
+      <div class="item-row" style="margin-bottom:8px">
+        <input type="text" id="ei-name-${rowId}" value="${esc(r['品名'] || '')}" placeholder="品名 *" />
+        <div class="qty-wrap">
+          <input type="number" id="ei-qty-${rowId}" min="0" value="${esc(r['數量'] || '')}" placeholder="數量" />
+          <select id="ei-unit-${rowId}">${unitOpts}</select>
+        </div>
+        <input type="number" id="ei-price-${rowId}" min="0" value="${esc(r['單價'] || '')}" placeholder="單價 *" />
+      </div>
+      <div class="item-extras-grid" style="margin-bottom:6px">
+        <div class="extra-field"><label>小計（元）</label>
+          <input type="number" id="ei-wp-${rowId}" min="0" value="${esc(r['批價'] || '')}" placeholder="批價" /></div>
+        <div class="extra-field"><label>批價門檻</label>
+          <input type="number" id="ei-wt-${rowId}" min="0" value="${esc(r['批價門檻'] || '')}" placeholder="批量起訂" /></div>
+        <div class="extra-field"><label>末端建議售價</label>
+          <input type="number" id="ei-rp-${rowId}" min="0" value="${esc(r['末端建議售價'] || '')}" placeholder="零售價" /></div>
+        <div class="extra-field"><label>實際出貨價</label>
+          <input type="number" id="ei-ap-${rowId}" min="0" value="${esc(r['實際出貨價'] || '')}" placeholder="實際出貨價" /></div>
+      </div>
+      <div class="item-note-field"><label>品項備注</label>
+        <textarea id="ei-note-${rowId}" style="min-height:32px">${esc(r['品項備注'] || '')}</textarea>
+      </div>
+    </td>
+    <td style="vertical-align:top;padding-top:10px;width:36px">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <button class="save-edit-btn" id="ei-save-${rowId}"
+          style="padding:6px 8px;font-size:13px;min-width:0"
+          onclick="saveOrderRow('${esc(sid)}',${rowIdx})">✓</button>
+        <button class="cancel-edit-btn"
+          style="padding:6px 8px;font-size:13px;min-width:0"
+          onclick="restoreOrderRow('${esc(sid)}',${rowIdx})">✕</button>
+      </div>
+    </td>`;
+}
+
+function restoreOrderRow(sid, rowIdx) {
+  const data = editStore[sid];
+  if (!data) return;
+  const r     = data.rows[rowIdx];
+  const rowId = `row-${sid}-${rowIdx}`;
+  const tr    = document.getElementById(rowId);
+  if (!tr) return;
+
+  const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位'] || '')}` : '—';
+  const purchaseHtml = `
+    <div style="margin-bottom:4px">${r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—'}</div>
+    <div>${r['批價']
+      ? `<span class="wholesale-pill">批價 $${esc(r['批價'])}${r['批價門檻'] ? ` / ${esc(r['批價門檻'])} ${esc(r['單位'] || '')} 起` : ''}</span>`
+      : '<span style="color:var(--gray-400)">—</span>'}</div>`;
+  const retailHtml = r['末端建議售價']
+    ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
+    : '<span style="color:var(--gray-400)">—</span>';
+  const actualHtml = r['實際出貨價']
+    ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['實際出貨價'])}</span>`
+    : '<span style="color:var(--gray-400)">—</span>';
+  const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
+
+  tr.innerHTML = `
+    <td>${esc(r['品名'] || '')}${itemNote}</td>
+    <td>${qty}</td>
+    <td>${purchaseHtml}</td>
+    <td>${retailHtml}</td>
+    <td>${actualHtml}</td>
+    <td style="text-align:center;width:36px">
+      <button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
+    </td>`;
+}
+
+async function saveOrderRow(sid, rowIdx) {
+  if (!WEBHOOK_URL) return;
+  const data = editStore[sid];
+  if (!data) return;
+
+  const rowId = `row-${sid}-${rowIdx}`;
+  const name  = document.getElementById(`ei-name-${rowId}`).value.trim();
+  const qty   = document.getElementById(`ei-qty-${rowId}`).value.trim();
+  const unit  = document.getElementById(`ei-unit-${rowId}`).value;
+  const price = document.getElementById(`ei-price-${rowId}`).value.trim();
+  const wp    = document.getElementById(`ei-wp-${rowId}`).value.trim();
+  const wt    = document.getElementById(`ei-wt-${rowId}`).value.trim();
+  const rp    = document.getElementById(`ei-rp-${rowId}`).value.trim();
+  const ap    = document.getElementById(`ei-ap-${rowId}`).value.trim();
+  const note  = document.getElementById(`ei-note-${rowId}`).value.trim();
+
+  if (!name || !price) { alert('品名和進貨價為必填'); return; }
+
+  const saveBtn = document.getElementById(`ei-save-${rowId}`);
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
+
+  const originalRow = data.rows[rowIdx];
+  const updatedRow  = { ...originalRow,
+    品名: name, 數量: qty, 單位: unit,
+    基本進貨價: price, 批價: wp, 批價門檻: wt,
+    末端建議售價: rp, 實際出貨價: ap, 品項備注: note };
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'updateRow',
+        target:'農場菜單',
+        提交ID: originalRow['提交ID'],
+        row: { 品名: name, 數量: qty, 單位: unit,
+               基本進貨價: price, 批價: wp, 批價門檻: wt,
+               末端建議售價: rp, 實際出貨價: ap, 品項備注: note },
+      }),
+    });
+    const result = await res.json();
+    if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
+    editStore[sid].rows = data.rows.map((r, i) => i === rowIdx ? updatedRow : r);
+    restoreRow(sid, rowIdx);
+  } catch(e) {
+    alert(`儲存失敗：${e.message}`);
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✓'; }
+  }
 }
