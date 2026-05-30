@@ -1,5 +1,5 @@
 // =============================================
-// tab-farm.js — 農場登記 + 農場瀏覽 / 編輯  v1.0.2
+// tab-farm.js — 農場登記 + 農場瀏覽 / 編輯
 // 依賴：shared.js（UNITS, WEBHOOK_URL, formatDate,
 //                  getNearestMonday, esc）
 // =============================================

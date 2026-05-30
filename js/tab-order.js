@@ -1,5 +1,5 @@
 // =============================================
-// tab-order.js — 餐廳下單 + 訂單瀏覽  v1.0.1
+// tab-order.js — 餐廳下單 + 訂單瀏覽
 // 依賴：shared.js（WEBHOOK_URL, formatDate,
 //                  getNearestMonday, esc）
 // =============================================
@@ -10,6 +10,9 @@ const ORDER_DATA_TARGET = '料理人下單';
 // ── Sub-tab 切換 ──────────────────────────────
 let currentOrderSub    = 'entry';
 let orderWeekChipsLoaded = false;
+
+let farmPriceCache = null;      // null = 尚未載入
+let farmPriceCacheWeek = '';    // 記錄是哪個週次的快取
 
 function switchOrderSubTab(sub) {
   currentOrderSub = sub;
@@ -30,6 +33,61 @@ function switchOrderSubTab(sub) {
 // ════════════════════════════════════════════
 let orderRows = [];
 let orderNid  = 1;
+
+async function autoFillPricesFromFarm() {
+  if (!WEBHOOK_URL) return;
+  try {
+    const weekDate = document.getElementById('orderWeekDate').value;
+    const weekStr  = weekDate ? formatDate(weekDate) : '';
+
+    // 同週次有快取就直接用，不重新 fetch
+    if (farmPriceCache && farmPriceCacheWeek === weekStr) {
+      _applyFarmPrices(farmPriceCache);
+      return;
+    }
+
+    let url = WEBHOOK_URL + '?action=query';
+    if (weekStr) url += '&weeks=' + encodeURIComponent(weekStr);
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    const priceMap = {};
+    (data.data || []).forEach(r => {
+      if (r['品名'] && r['農二出貨價'])
+        priceMap[r['品名'].trim()] = r['農二出貨價'];
+    });
+
+    farmPriceCache     = priceMap;
+    farmPriceCacheWeek = weekStr;
+    _applyFarmPrices(priceMap);
+  } catch(e) {
+    console.warn('autoFillPricesFromFarm 失敗', e);
+  }
+}
+
+function _findFarmPrice(priceMap, name) {
+  const n = name.trim();
+
+  // 第一優先：完全匹配
+  if (priceMap[n]) return priceMap[n];
+
+  // 第二優先：其中一方包含另一方（取最長的 key 優先避免誤匹配）
+  const keys = Object.keys(priceMap);
+  const matched = keys
+    .filter(k => k.includes(n) || n.includes(k))
+    .sort((a, b) => b.length - a.length); // 較長的優先（較精確）
+
+  return matched.length ? priceMap[matched[0]] : null;
+}
+
+function _applyFarmPrices(priceMap) {
+  orderRows.forEach(row => {
+    if (!row.price) {
+      const price = _findFarmPrice(priceMap, row.name);
+      if (price) row.price = price;
+    }
+  });
+}
 
 function parseOrderText(rawText) {
   const unitRe = UNITS.join('|');
@@ -65,16 +123,22 @@ function parseOrderText(rawText) {
   return result;
 }
 
-function parseAndPreview() {
+async function parseAndPreview() {
   const raw = document.getElementById('orderRawText').value.trim();
   if (!raw) { alert('請先貼入下單訊息'); return; }
+  
   orderNid  = 1;
+  
   orderRows = parseOrderText(raw);
+  await autoFillPricesFromFarm();  
+
   if (!orderRows.length) {
     alert('解析不到任何品項，請確認格式（品名＋數量＋單位，例如：龍葵2斤）');
     return;
   }
+  
   renderOrderPreview();
+  
   document.getElementById('orderPreviewCard').style.display  = 'block';
   document.getElementById('orderDetailsCard').style.display  = 'block';
   document.getElementById('orderSubmitBtn').style.display    = 'flex';

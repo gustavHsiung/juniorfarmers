@@ -198,7 +198,7 @@
             <span class="step-title">貼入下單訊息</span>
           </div>
           <textarea class="order-raw-textarea" id="orderRawText"
-            placeholder="料理人下單，&#10;恰比兔子&#10;綠火焰/2斤&#10;龍葵2斤&#10;&#10;雲舍&#10;紅蘿蔔+2包&#10;青蔥+2把"></textarea>
+            placeholder="例如：&#10;恰比兔子&#10;綠火焰/2斤&#10;龍葵2斤&#10;&#10;雲舍&#10;紅蘿蔔+2包&#10;青蔥+2把"></textarea>
           <div class="parse-hint">支援格式：品名＋數量＋單位（公斤/斤/顆/把/包/支…），中文數字亦可。</div>
           <button class="parse-btn" onclick="parseAndPreview()">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -320,9 +320,31 @@
 
   </div><!-- /panelOrder -->
 
-  <!-- ═══ BROWSE TAB（保留備用）═══ -->
-  <div id="panelBrowse" style="display:none"></div>
-
+<!-- ═══ BROWSE TAB（供需分析）═══ -->
+  <div id="panelBrowse" style="display:none">
+    <div class="card">
+      <div class="card-title">選擇週次分析</div>
+      <div class="browse-controls">
+        <div class="field">
+          <label for="analysisWeekDate">週一日期</label>
+          <input type="date" id="analysisWeekDate" />
+        </div>
+        <button class="fetch-btn" onclick="fetchAnalysisData()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          分析
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <div class="chips-hint" id="analysisChipsHint"></div>
+        <div class="week-quick-select" id="analysisWeekChips"></div>
+        <button class="refresh-text-btn" id="analysisRefreshBtn" onclick="loadAnalysisWeekChips()" style="display:none">↻ 重新整理</button>
+      </div>
+    </div>
+    <div class="browse-spinner-wrap" id="analysisSpinner" style="display:none"><div class="browse-spinner"></div></div>
+    <div id="analysisResults">
+      <div class="browse-empty"><span class="empty-icon">🗂️</span>請選擇週次後按「分析」</div>
+    </div>
+  </div>
   <div class="footer">農二菜車的農產品供應登記系統 · 感謝您的使用</div>
 </div><!-- /container -->
 
@@ -332,5 +354,6 @@
 <script src="js/shared.js"></script>
 <script src="js/tab-farm.js"></script>
 <script src="js/tab-order.js"></script>
+<script src="js/tab-browse.js"></script>
 </body>
 </html>
