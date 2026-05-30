@@ -4,6 +4,8 @@
 //                  getNearestMonday, esc）
 // =============================================
 
+
+const FARM_DATA_TARGET = '農場菜單';
 // ── Sub-tab 切換 ──────────────────────────────
 let currentFarmSub = 'register';
 let weekChipsLoaded = false;
@@ -472,7 +474,7 @@ async function saveRow(sid, rowIdx) {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'updateRow',
-        target:'農場菜單',
+        target: FARM_DATA_TARGET,
         提交ID: originalRow['提交ID'],
         row: { 品名: name, 數量: qty, 單位: unit,
                基本進貨價: price, 批價: wp, 批價門檻: wt,

@@ -4,8 +4,8 @@
 //                  getNearestMonday, esc）
 // =============================================
 
-const ORDER_UNITS = ['公斤','台斤','斤','公克','顆','支','束','盒','袋','打','份','把','包','條','片'];
-const CN_NUM      = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'半':0.5 };
+const CN_NUM = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'半':0.5 };
+const ORDER_DATA_TARGET = '料理人下單';
 
 // ── Sub-tab 切換 ──────────────────────────────
 let currentOrderSub    = 'entry';
@@ -32,7 +32,7 @@ let orderRows = [];
 let orderNid  = 1;
 
 function parseOrderText(rawText) {
-  const unitRe = ORDER_UNITS.join('|');
+  const unitRe = UNITS.join('|');
   const numRe = '\\d+(?:\\.\\d+)?|[一二三四五六七八九十半]';
   const itemRe = new RegExp(`^(.+?)[/／\\s+＋]*(${numRe})(${unitRe})\\s*$`);
 
@@ -99,7 +99,7 @@ function renderOrderPreview() {
       ? (parseFloat(row.qty) * parseFloat(row.price)).toFixed(0) : '';
     if (rowSubtotal) total += parseFloat(rowSubtotal);
 
-    const unitOpts = ORDER_UNITS.map(u => `<option${u === row.unit ? ' selected' : ''}>${u}</option>`).join('');
+    const unitOpts = UNITS.map(u => `<option${u === row.unit ? ' selected' : ''}>${u}</option>`).join('');
     const tr = document.createElement('tr');
     tr.id = 'order-row-' + row.id;
     tr.innerHTML = `
@@ -294,6 +294,11 @@ async function refreshOrderWeekChips() {
 }
 
 // ── Order browse query ───────────────────────────────────────
+function setOrderBrowseMsg(msg) {
+  document.getElementById('orderSearchResults').innerHTML =
+    `<div class="browse-empty"><span class="empty-icon">🌶️</span>${msg}</div>`;
+}
+
 async function fetchOrderBrowseData() {
   const val = document.getElementById('orderBrowseWeekDate').value;
   if (val) {
@@ -302,7 +307,7 @@ async function fetchOrderBrowseData() {
       c.classList.toggle('active', c.textContent.trim() === ws)
     );
   }
-  if (!WEBHOOK_URL) { setBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
+  if (!WEBHOOK_URL) { setOrderBrowseMsg('請先在設定中填入 Webhook 網址。'); return; }
   const spinner = document.getElementById('orderBrowseSpinner');
   const results = document.getElementById('orderSearchResults');
   spinner.style.display = 'block'; results.innerHTML = '';
@@ -318,12 +323,30 @@ async function fetchOrderBrowseData() {
     spinner.style.display = 'none';
     renderOrderBrowseResults(data.data || []);
   } catch(e) {
+    console.error('fetchOrderBrowseData',e);
     spinner.style.display = 'none';
     results.innerHTML = '<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定</div>';
   }
 }
 
+let orderEditStore = {};
+
+function countShopTotal(shopRows) {
+  let shopTotal = 0;
+   shopRows.forEach(r => { 
+    const t = parseFloat(r['小記']); 
+
+    if (!isNaN(t)) shopTotal += t; 
+  });
+   return shopTotal;
+}
+
+function renderShopTotal(shopMeta) {
+  return `${shopMeta.orderCount} 項${shopMeta.total > 0 ? ` · 共 $${Math.round(shopMeta.total)}` : ''}`;
+}
+
 function renderOrderBrowseResults(rows) {
+  orderEditStore = {};
   const container = document.getElementById('orderSearchResults');
   if (!rows.length) {
     container.innerHTML = '<div class="browse-empty"><span class="empty-icon">🧾</span>查無符合條件的訂單資料</div>';
@@ -331,41 +354,50 @@ function renderOrderBrowseResults(rows) {
   }
 
   // Group by shop
+  const shopList = [];
   const shopMap = {};
-  const shopOrder = [];
+  let grandTotal = 0;
+
   rows.forEach(r => {
-    const shop = r['店家/料理人'] || '（未填店家）';
-    if (!shopMap[shop]) { shopMap[shop] = []; shopOrder.push(shop); }
-    shopMap[shop].push(r);
+    const shop = esc(r['店家/料理人'] || '（未填店家）');
+    if (!shopMap[shop]) { 
+      shopMap[shop] = { orders:[], meta:{ orderCount: 0, total: 0 }}; 
+      shopList.push(shop); 
+    }
+    
+    const t = parseFloat(r['小記']); 
+    if (!isNaN(t)) {
+      grandTotal += t;
+      shopMap[shop].meta.total+= t;
+    }
+    
+    shopMap[shop].orders.push(r);
+    shopMap[shop].meta.orderCount++;
+    
   });
 
-  // Calculate total (if prices filled)
-  let grandTotal = 0;
-  rows.forEach(r => { const t = parseFloat(r['小記']); if (!isNaN(t)) grandTotal += t; });
-
   let html = `<div class="order-browse-summary">
-    共 ${rows.length} 筆 · ${shopOrder.length} 個店家
-    ${grandTotal > 0 ? ` · 合計 <strong style="color:var(--red-600)">$${Math.round(grandTotal)}</strong>` : ''}
+    共 ${rows.length} 筆 · ${shopList.length} 個店家
+    <span id="order-grand-total-display">${grandTotal > 0 ? ` · 合計 <strong style="color:var(--red-600)">$${Math.round(grandTotal)}</strong>` : ''}</span>
   </div>`;
 
-  shopOrder.forEach(shop => {
-    const shopRows = shopRows2 = shopMap[shop];
+  const sidCounters = {};
+
+  shopList.forEach(shop => {
+    const shopRows = shopMap[shop].orders;
     const firstRow = shopRows[0];
     const week = firstRow['週次'] || '';
-    const registrant = firstRow['登記人'] || '';
     const deliveryLoc = firstRow['送貨地點'] || '';
     const deliveryTime = firstRow['送貨時間'] || '';
-
-    // Shop total
-    let shopTotal = 0;
-    shopRows.forEach(r => { const t = parseFloat(r['交易總價']); if (!isNaN(t)) shopTotal += t; });
-
+  
     html += `<div class="order-group">
       <div class="order-group-header">
-        <span class="shop-name">🏪 ${esc(shop)}</span>
+        <span class="shop-name">🏪 ${shop}</span>
         <span class="shop-meta">
           ${week ? `${esc(week)}<br>` : ''}
-          ${shopRows.length} 項${shopTotal > 0 ? ` · $${Math.round(shopTotal)}` : ''}
+        </span>
+        <span id="${shop}-${week}-meta-deal" class="shop-meta shop-meta-deal">
+          ${esc(renderShopTotal(shopMap[shop].meta))}
         </span>
       </div>`;
 
@@ -381,23 +413,30 @@ function renderOrderBrowseResults(rows) {
         <th>品名</th><th>數量</th><th>單價</th><th>小計</th><th>付款</th><th>備註</th><th></th>
       </tr></thead><tbody>`;
 
-    shopRows.forEach((r, rowIdx) => {
+    shopRows.forEach(r => {
       const sid = getBaseId(r['提交ID'] || '');
-      const shop  = r['店家'];
-      const qty  = r['數量'] ?   `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
+      if (sid) {
+        if (!orderEditStore[sid]) orderEditStore[sid] = { rows: [] };
+        if (sidCounters[sid] === undefined) sidCounters[sid] = 0;
+        orderEditStore[sid].rows.push(r);
+      }
+      const rowIdx = sid ? sidCounters[sid]++ : -1;
+      const rowId  = sid ? `orow-${sid}-${rowIdx}` : '';
+
+      const qty   = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
       const price = r['單價（元）'] ? `$${esc(r['單價（元）'])}` : '—';
       const total = r['小記'] ? `<strong>$${esc(r['小記'])}</strong>` : '—';
       const note  = r['備註'] ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
 
       const payStatus = r['付款狀態'] || '';
       let payClass = 'none', payLabel = payStatus || '未設定';
-      if (payStatus === '待付款')  { payClass = 'pending'; }
-      else if (payStatus === '已付款')  { payClass = 'paid'; }
+      if (payStatus === '待付款')        { payClass = 'pending'; }
+      else if (payStatus === '已付款')   { payClass = 'paid'; }
       else if (payStatus === '貨到付款') { payClass = 'cod'; }
 
-      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+      const editBtn = rowId ? `<button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
 
-      html += `<tr>
+      html += `<tr${rowId ? ` id="${rowId}"` : ''}>
         <td>${esc(r['品名']||'')}</td>
         <td>${qty}</td>
         <td>${price}</td>
@@ -416,38 +455,40 @@ function renderOrderBrowseResults(rows) {
 
 // ── 列編輯 ────────────────────────────────────
 function editOrderRow(sid, rowIdx) {
-  const data = editStore[sid];
+  const data = orderEditStore[sid];
   if (!data) return;
   const r     = data.rows[rowIdx];
-  const rowId = `row-${sid}-${rowIdx}`;
+  const rowId = `orow-${sid}-${rowIdx}`;
   const tr    = document.getElementById(rowId);
   if (!tr) return;
 
+  const thead = tr.closest('table').querySelector('thead');
+  if (thead) thead.style.display = 'none';
+
   const unitOpts = UNITS.map(u =>
-    `<option${u === (r['單位'] || '公斤') ? ' selected' : ''}>${u}</option>`).join('');
+    `<option${u === (r['單位'] || '斤') ? ' selected' : ''}>${u}</option>`).join('');
+  const payOpts = ['待付款','已付款','貨到付款'].map(p =>
+    `<option${p === (r['付款狀態'] || '') ? ' selected' : ''}>${p}</option>`).join('');
 
   tr.innerHTML = `
-    <td colspan="5" style="padding:8px 6px">
+    <td colspan="6" style="padding:8px 6px">
       <div class="item-row" style="margin-bottom:8px">
-        <input type="text" id="ei-name-${rowId}" value="${esc(r['品名'] || '')}" placeholder="品名 *" />
-        <div class="qty-wrap">
-          <input type="number" id="ei-qty-${rowId}" min="0" value="${esc(r['數量'] || '')}" placeholder="數量" />
-          <select id="ei-unit-${rowId}">${unitOpts}</select>
-        </div>
-        <input type="number" id="ei-price-${rowId}" min="0" value="${esc(r['單價'] || '')}" placeholder="單價 *" />
+        <div class="extra-field"><label>品名 *</label>
+          <input type="text" id="ei-name-${rowId}" value="${esc(r['品名'] || '')}" placeholder="品名 *" /></div>
+        <div class="extra-field"><label>數量</label>
+          <div class="qty-wrap">
+            <input type="number" id="ei-qty-${rowId}" min="0" step="0.1" value="${esc(r['數量'] || '')}" placeholder="數量" style="width:72px" />
+            <select id="ei-unit-${rowId}" style="width:72px">${unitOpts}</select>
+          </div></div>
       </div>
       <div class="item-extras-grid" style="margin-bottom:6px">
-        <div class="extra-field"><label>小計（元）</label>
-          <input type="number" id="ei-wp-${rowId}" min="0" value="${esc(r['批價'] || '')}" placeholder="批價" /></div>
-        <div class="extra-field"><label>批價門檻</label>
-          <input type="number" id="ei-wt-${rowId}" min="0" value="${esc(r['批價門檻'] || '')}" placeholder="批量起訂" /></div>
-        <div class="extra-field"><label>末端建議售價</label>
-          <input type="number" id="ei-rp-${rowId}" min="0" value="${esc(r['末端建議售價'] || '')}" placeholder="零售價" /></div>
-        <div class="extra-field"><label>實際出貨價</label>
-          <input type="number" id="ei-ap-${rowId}" min="0" value="${esc(r['實際出貨價'] || '')}" placeholder="實際出貨價" /></div>
+        <div class="extra-field"><label>單價（元）</label>
+          <input type="number" id="ei-price-${rowId}" min="0" value="${esc(r['單價（元）'] || '')}" placeholder="單價" /></div>
+        <div class="extra-field"><label>付款狀態</label>
+          <select id="ei-pay-${rowId}">${payOpts}</select></div>
       </div>
-      <div class="item-note-field"><label>品項備注</label>
-        <textarea id="ei-note-${rowId}" style="min-height:32px">${esc(r['品項備注'] || '')}</textarea>
+      <div class="item-note-field"><label>備註</label>
+        <textarea id="ei-note-${rowId}" style="min-height:32px">${esc(r['備註'] || '')}</textarea>
       </div>
     </td>
     <td style="vertical-align:top;padding-top:10px;width:36px">
@@ -463,33 +504,61 @@ function editOrderRow(sid, rowIdx) {
 }
 
 function restoreOrderRow(sid, rowIdx) {
-  const data = editStore[sid];
+  const data = orderEditStore[sid];
   if (!data) return;
   const r     = data.rows[rowIdx];
-  const rowId = `row-${sid}-${rowIdx}`;
+  const rowId = `orow-${sid}-${rowIdx}`;
   const tr    = document.getElementById(rowId);
   if (!tr) return;
 
-  const qty = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位'] || '')}` : '—';
-  const purchaseHtml = `
-    <div style="margin-bottom:4px">${r['基本進貨價'] ? `<span class="price-pill">進貨 $${esc(r['基本進貨價'])}</span>` : '—'}</div>
-    <div>${r['批價']
-      ? `<span class="wholesale-pill">批價 $${esc(r['批價'])}${r['批價門檻'] ? ` / ${esc(r['批價門檻'])} ${esc(r['單位'] || '')} 起` : ''}</span>`
-      : '<span style="color:var(--gray-400)">—</span>'}</div>`;
-  const retailHtml = r['末端建議售價']
-    ? `<span class="price-pill">$${esc(r['末端建議售價'])}</span>`
-    : '<span style="color:var(--gray-400)">—</span>';
-  const actualHtml = r['實際出貨價']
-    ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['實際出貨價'])}</span>`
-    : '<span style="color:var(--gray-400)">—</span>';
-  const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
+  const thead = tr.closest('table').querySelector('thead');
+  if (thead) thead.style.display = '';
+
+  const shopName = r['店家/料理人'] || '（未填店家）';
+  const week     = r['週次'] || '';
+  const metaEl   = document.getElementById(`${esc(shopName)}-${week}-meta-deal`);
+  let grandTotal = 0;
+  Object.values(orderEditStore).forEach(d => {
+    d.rows.forEach(row => {
+      const t = parseFloat(row['小記']);
+      if (!isNaN(t)) grandTotal += t;
+    });
+  });
+  const grandEl = document.getElementById('order-grand-total-display');
+  if (grandEl) grandEl.innerHTML = grandTotal > 0 ? ` · 合計 <strong style="color:var(--red-600)">$${Math.round(grandTotal)}</strong>` : '';
+
+  if (metaEl) {
+    let shopOrderTotal = 0, shopOrderCount = 0;
+    Object.values(orderEditStore).forEach(d => {
+      d.rows.forEach(row => {
+        if ((row['店家/料理人'] || '（未填店家）') === shopName) {
+          const t = parseFloat(row['小記']);
+          if (!isNaN(t)) shopOrderTotal += t;
+          shopOrderCount++;
+        }
+      });
+    });
+    metaEl.innerHTML = renderShopTotal({ orderCount: shopOrderCount, total: shopOrderTotal });
+  }
+
+  const qty   = r['數量'] ? `${esc(r['數量'])} ${esc(r['單位']||'')}` : '—';
+  const price = r['單價（元）'] ? `$${esc(r['單價（元）'])}` : '—';
+  const total = r['小記'] ? `<strong>$${esc(r['小記'])}</strong>` : '—';
+  const note  = r['備註'] ? `<span style="color:var(--gray-400);font-size:11px;font-style:italic">${esc(r['備註'])}</span>` : '—';
+
+  const payStatus = r['付款狀態'] || '';
+  let payClass = 'none', payLabel = payStatus || '未設定';
+  if (payStatus === '待付款')        { payClass = 'pending'; }
+  else if (payStatus === '已付款')   { payClass = 'paid'; }
+  else if (payStatus === '貨到付款') { payClass = 'cod'; }
 
   tr.innerHTML = `
-    <td>${esc(r['品名'] || '')}${itemNote}</td>
+    <td>${esc(r['品名']||'')}</td>
     <td>${qty}</td>
-    <td>${purchaseHtml}</td>
-    <td>${retailHtml}</td>
-    <td>${actualHtml}</td>
+    <td>${price}</td>
+    <td>${total}</td>
+    <td><span class="pay-pill ${payClass}">${esc(payLabel)}</span></td>
+    <td>${note}</td>
     <td style="text-align:center;width:36px">
       <button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
     </td>`;
@@ -497,30 +566,27 @@ function restoreOrderRow(sid, rowIdx) {
 
 async function saveOrderRow(sid, rowIdx) {
   if (!WEBHOOK_URL) return;
-  const data = editStore[sid];
+  const data = orderEditStore[sid];
   if (!data) return;
 
-  const rowId = `row-${sid}-${rowIdx}`;
+  const rowId = `orow-${sid}-${rowIdx}`;
   const name  = document.getElementById(`ei-name-${rowId}`).value.trim();
   const qty   = document.getElementById(`ei-qty-${rowId}`).value.trim();
   const unit  = document.getElementById(`ei-unit-${rowId}`).value;
   const price = document.getElementById(`ei-price-${rowId}`).value.trim();
-  const wp    = document.getElementById(`ei-wp-${rowId}`).value.trim();
-  const wt    = document.getElementById(`ei-wt-${rowId}`).value.trim();
-  const rp    = document.getElementById(`ei-rp-${rowId}`).value.trim();
-  const ap    = document.getElementById(`ei-ap-${rowId}`).value.trim();
+  const pay   = document.getElementById(`ei-pay-${rowId}`).value;
   const note  = document.getElementById(`ei-note-${rowId}`).value.trim();
 
-  if (!name || !price) { alert('品名和進貨價為必填'); return; }
+  if (!name) { alert('品名為必填'); return; }
 
   const saveBtn = document.getElementById(`ei-save-${rowId}`);
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
 
   const originalRow = data.rows[rowIdx];
-  const updatedRow  = { ...originalRow,
+  const subtotal = (qty && price) ? String((parseFloat(qty) * parseFloat(price)).toFixed(0)) : '';
+  const updatedRow = { ...originalRow,
     品名: name, 數量: qty, 單位: unit,
-    基本進貨價: price, 批價: wp, 批價門檻: wt,
-    末端建議售價: rp, 實際出貨價: ap, 品項備注: note };
+    '單價（元）': price, 小記: subtotal, 付款狀態: pay, 備註: note };
 
   try {
     const res = await fetch(WEBHOOK_URL, {
@@ -528,17 +594,16 @@ async function saveOrderRow(sid, rowIdx) {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'updateRow',
-        target:'農場菜單',
+        target: ORDER_DATA_TARGET,
         提交ID: originalRow['提交ID'],
         row: { 品名: name, 數量: qty, 單位: unit,
-               基本進貨價: price, 批價: wp, 批價門檻: wt,
-               末端建議售價: rp, 實際出貨價: ap, 品項備注: note },
+               '單價（元）': price, 小記: subtotal, 付款狀態: pay, 備註: note },
       }),
     });
     const result = await res.json();
     if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
-    editStore[sid].rows = data.rows.map((r, i) => i === rowIdx ? updatedRow : r);
-    restoreRow(sid, rowIdx);
+    orderEditStore[sid].rows = data.rows.map((r, i) => i === rowIdx ? updatedRow : r);
+    restoreOrderRow(sid, rowIdx);
   } catch(e) {
     alert(`儲存失敗：${e.message}`);
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✓'; }

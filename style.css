@@ -251,6 +251,7 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .order-group-header { background: var(--red-600); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .order-group-header .shop-name { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 7px; }
 .order-group-header .shop-meta { font-size: 11px; color: rgba(255,255,255,0.7); text-align: right; }
+.order-group-header .shop-meta-deal { font-size: 11px; color: rgba(255,255,255,0.7); text-align: right; }
 .order-group-delivery { background: #fff8f0; border-bottom: 1px solid #f0deb0; padding: 7px 14px; font-size: 12px; color: #7a5010; display: flex; gap: 14px; flex-wrap: wrap; }
 .order-group-delivery span { display: flex; align-items: center; gap: 4px; }
 .order-browse-table { width: 100%; border-collapse: collapse; font-size: 13px; }
