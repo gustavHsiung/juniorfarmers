@@ -4,6 +4,7 @@
 // =============================================
 
 let analysisWeekChipsLoaded = false;
+let _matchedCards = [];
 
 // 切到分析頁時自動填入最近的週一，並載入 chips
 (function patchSwitchTab() {
@@ -182,7 +183,7 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
       ${_statCard('農場', farms.size, '🌿')}
       ${_statCard('供應品項', farmItems.length, '🥬')}
-      ${_statCard('店家/料理人', shops.size, '🍽️')}
+      ${_statCard('餐廳', shops.size, '🍽️')}
       ${_statCard('訂單品項', orderItems.length, '📋')}
     </div>`;
 
@@ -193,34 +194,42 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
     if (!matchedGroups[key]) matchedGroups[key] = { farm: m.farm, name: m.supply.name, orders: [] };
     matchedGroups[key].orders.push(m.order);
   });
-  const matchedCards = Object.values(matchedGroups);
+  _matchedCards = Object.values(matchedGroups);
 
-  const _card = (borderColor, labelColor, labelText, inner) =>
-    `<div style="border-left:3px solid ${borderColor};border-radius:0 8px 8px 0;padding:10px 14px;background:var(--surface);border-top:0.5px solid var(--border);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
-      <div style="font-size:11px;font-weight:600;color:${labelColor};margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">${labelText}</div>
+  const _sectionHeader = (borderColor, labelColor, labelText, count) =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:14px 12px 6px">
+      <div style="width:3px;height:14px;background:${borderColor};border-radius:2px;flex-shrink:0"></div>
+      <span style="font-size:12px;font-weight:600;color:${labelColor};letter-spacing:.04em">${labelText}</span>
+      <span style="font-size:11px;color:var(--gray-400)">${count} 項</span>
+    </div>`;
+
+  const _card = (borderColor, inner) =>
+    `<div style="border-left:3px solid ${borderColor};border-radius:0 8px 8px 0;padding:8px 12px;background:var(--surface);border-top:0.5px solid var(--border);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
       ${inner}
     </div>`;
 
-  html += `<div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px">
-    ${matchedCards.length ? matchedCards.map(g => _card(
-      'var(--green-500, #4caf7d)', 'var(--green-600, #2d7a4f)', '有供有訂',
-      `<div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px">
-        <span style="color:var(--gray-400);font-weight:400;font-size:12px">${esc(g.farm)}　</span>${esc(g.name)}
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#e8f5e9;color:#2d7a4f">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
-      </div>`
-    )).join('') : _card('var(--green-500,#4caf7d)','var(--green-600,#2d7a4f)','有供有訂','<span style="color:var(--gray-400);font-size:13px">無</span>')}
+  html += `<div style="display:flex;align-items:center;gap:8px;padding:14px 12px 6px">
+    <div style="width:3px;height:14px;background:var(--green-500,#4caf7d);border-radius:2px;flex-shrink:0"></div>
+    <span style="font-size:12px;font-weight:600;color:#2d7a4f;letter-spacing:.04em">有供有訂</span>
+    <span style="font-size:11px;color:var(--gray-400)">${_matchedCards.length} 項</span>
+    <select id="matchedSortSelect" onchange="sortMatchedCards(this.value)"
+      style="margin-left:auto;font-size:11px;padding:1px 4px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--gray-500);cursor:pointer;width:auto">
+      <option value="default">預設順序</option>
+      <option value="name">按品名</option>
+      <option value="orders">按店家數</option>
+    </select>
   </div>`;
+  html += `<div id="matchedCardsContainer" style="padding:0 12px 4px;display:flex;flex-direction:column;gap:6px"></div>`;
 
-  html += `<div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:8px">
+  html += _sectionHeader('#e6a817', '#9a6e0a', '有供無訂', supplyOnly.length);
+  html += `<div style="padding:0 12px 4px;display:flex;flex-direction:column;gap:6px">
     ${supplyOnly.length ? supplyOnly.map(fi => _card(
-      '#e6a817', '#9a6e0a', '有供無訂',
+      '#e6a817',
       `<div style="font-size:13px;font-weight:600;color:var(--gray-800)">
         <span style="color:var(--gray-400);font-weight:400;font-size:12px">${esc(fi.farm)}　</span>${esc(fi.name)}
       </div>
-      ${fi.price ? `<div style="font-size:12px;color:var(--gray-500);margin-top:4px">進貨價 $${esc(fi.price)}</div>` : ''}`
-    )).join('') : _card('#e6a817','#9a6e0a','有供無訂','<span style="color:var(--gray-400);font-size:13px">無</span>')}
+      ${fi.price ? `<div style="font-size:12px;color:var(--gray-500);margin-top:3px">進貨價 $${esc(fi.price)}</div>` : ''}`
+    )).join('') : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>'}
   </div>`;
 
   const orderOnlyGroups = {};
@@ -230,17 +239,45 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
   });
   const orderOnlyCards = Object.values(orderOnlyGroups);
 
-  html += `<div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:8px">
+  html += _sectionHeader('#e05252', '#a03030', '有訂無供', orderOnlyCards.length);
+  html += `<div style="padding:0 12px 4px;display:flex;flex-direction:column;gap:6px">
     ${orderOnlyCards.length ? orderOnlyCards.map(g => _card(
-      '#e05252', '#a03030', '有訂無供',
-      `<div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px">${esc(g.name)}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
+      '#e05252',
+      `<div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:5px">${esc(g.name)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
         ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#fdecea;color:#a03030">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
       </div>`
-    )).join('') : _card('#e05252','#a03030','有訂無供','<span style="color:var(--gray-400);font-size:13px">無</span>')}
+    )).join('') : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>'}
   </div>`;
 
   results.innerHTML = html;
+  renderMatchedCards('default');
+}
+
+function _matchedCardHtml(g) {
+  return `<div style="border-left:3px solid var(--green-500,#4caf7d);border-radius:0 8px 8px 0;padding:8px 12px;background:var(--surface);border-top:0.5px solid var(--border);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
+    <div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:5px">
+      <span style="color:var(--gray-400);font-weight:400;font-size:12px">${esc(g.farm)}　</span>${esc(g.name)}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#e8f5e9;color:#2d7a4f">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMatchedCards(sortBy) {
+  const container = document.getElementById('matchedCardsContainer');
+  if (!container) return;
+  const sorted = [..._matchedCards];
+  if (sortBy === 'name')   sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
+  if (sortBy === 'orders') sorted.sort((a, b) => b.orders.length - a.orders.length);
+  container.innerHTML = sorted.length
+    ? sorted.map(_matchedCardHtml).join('')
+    : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>';
+}
+
+function sortMatchedCards(val) {
+  renderMatchedCards(val);
 }
 
 function _statCard(label, value, icon) {
