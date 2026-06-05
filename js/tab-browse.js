@@ -85,6 +85,7 @@ async function _fetchAnalysisWithWeek(weekStr) {
     spinner.style.display = 'none';
     renderAnalysis(weekStr, farmData.data || [], orderData.data || []);
   } catch(e) {
+    console.error('_fetchAnalysisWithWeek', e);
     spinner.style.display = 'none';
     results.innerHTML = '<div class="browse-empty"><span class="empty-icon">⚠️</span>查詢失敗，請確認網路或 Webhook 設定。</div>';
   }
@@ -191,7 +192,12 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
   const matchedGroups = {};
   matched.forEach(m => {
     const key = m.farm + '\u0000' + m.supply.name;
-    if (!matchedGroups[key]) matchedGroups[key] = { farm: m.farm, name: m.supply.name, orders: [] };
+    if (!matchedGroups[key]) matchedGroups[key] = { 
+      farm: m.farm, 
+      name: m.supply.name, 
+      supply: m.supply, 
+      orders: [] 
+    };
     matchedGroups[key].orders.push(m.order);
   });
   _matchedCards = Object.values(matchedGroups);
@@ -214,9 +220,10 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
     <span style="font-size:11px;color:var(--gray-400)">${_matchedCards.length} 項</span>
     <select id="matchedSortSelect" onchange="sortMatchedCards(this.value)"
       style="margin-left:auto;font-size:11px;padding:1px 4px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--gray-500);cursor:pointer;width:auto">
-      <option value="default">預設順序</option>
-      <option value="name">按品名</option>
-      <option value="orders">按店家數</option>
+      <option value="default"> ↕ 預設順序</option>
+      <option value="name">品名</option>
+      <option value="orders">店家數</option>
+      <option value="price">銷售總額</option>
     </select>
   </div>`;
   html += `<div id="matchedCardsContainer" style="padding:0 12px 4px;display:flex;flex-direction:column;gap:6px"></div>`;
@@ -241,13 +248,20 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
 
   html += _sectionHeader('#e05252', '#a03030', '有訂無供', orderOnlyCards.length);
   html += `<div style="padding:0 12px 4px;display:flex;flex-direction:column;gap:6px">
-    ${orderOnlyCards.length ? orderOnlyCards.map(g => _card(
-      '#e05252',
-      `<div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:5px">${esc(g.name)}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#fdecea;color:#a03030">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
-      </div>`
-    )).join('') : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>'}
+    ${orderOnlyCards.length ? orderOnlyCards.map(g => {
+      const orderTotal = g.orders.reduce((s, o) => s + (parseFloat(o.price) || 0) * (parseFloat(o.qty) || 0), 0);
+      const totalHtml  = orderTotal > 0
+        ? `<div style="font-size:11px;color:var(--gray-500);margin-top:5px">訂單總金額 <b style="color:#a03030">$${orderTotal.toLocaleString()}</b></div>`
+        : '';
+      return _card(
+        '#e05252',
+        `<div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:5px">${esc(g.name)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#fdecea;color:#a03030">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
+        </div>
+        ${totalHtml}`
+      );
+    }).join('') : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>'}
   </div>`;
 
   results.innerHTML = html;
@@ -255,6 +269,21 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
 }
 
 function _matchedCardHtml(g) {
+  console.log('_matchedCardHtml', g);
+  // 新增：計算銷售總價與利潤
+  let sales = 0
+  const profit = g.orders.reduce((p, o) => {
+    sales += (parseFloat(o.price) || 0) * (parseFloat(o.qty) || 0);
+
+    return p + (((parseFloat(o.price) || 0 )- (parseFloat(g.supply?.price)) || 0) * (parseFloat(o.qty) || 0));
+  }, 0);
+
+  const finHtml = sales !== 0
+    ? `<div style="font-size:11px;color:var(--gray-500);margin-top:5px;display:flex;gap:10px">
+        <span>銷售總價 <b style="color:var(--gray-700)">$${sales.toLocaleString()}</b></span>
+       <span>利潤 <b style="color:${profit >= 0 ? '#2d7a4f' : '#a03030'}">$${profit.toLocaleString()}</b></span>
+      </div>` : '';
+
   return `<div style="border-left:3px solid var(--green-500,#4caf7d);border-radius:0 8px 8px 0;padding:8px 12px;background:var(--surface);border-top:0.5px solid var(--border);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
     <div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:5px">
       <span style="color:var(--gray-400);font-weight:400;font-size:12px">${esc(g.farm)}　</span>${esc(g.name)}
@@ -262,15 +291,24 @@ function _matchedCardHtml(g) {
     <div style="display:flex;flex-wrap:wrap;gap:4px">
       ${g.orders.map(o => `<span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#e8f5e9;color:#2d7a4f">${esc(o.shop)}${o.qty ? '（' + esc(o.qty) + ' ' + esc(o.unit) + '）' : ''}</span>`).join('')}
     </div>
+    ${finHtml}
   </div>`;
 }
 
 function renderMatchedCards(sortBy) {
   const container = document.getElementById('matchedCardsContainer');
   if (!container) return;
+
   const sorted = [..._matchedCards];
   if (sortBy === 'name')   sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
   if (sortBy === 'orders') sorted.sort((a, b) => b.orders.length - a.orders.length);
+  if (sortBy === 'price')  sorted.sort((a, b) => {
+  
+    const sum = g => g.orders.reduce((acc, o) => acc + (parseFloat(o.price) || 0) * (parseFloat(o.qty) || 0), 0);
+    
+    return sum(b) - sum(a);
+  });
+
   container.innerHTML = sorted.length
     ? sorted.map(_matchedCardHtml).join('')
     : '<span style="color:var(--gray-400);font-size:13px;padding:4px 0;display:block">無</span>';
