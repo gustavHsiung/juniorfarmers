@@ -270,7 +270,32 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .order-browse-filter input { font-size: 14px; padding: 9px 12px; }
 .orderSearchResults .row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: darkgreen;}
 
-/* ── Responsive ── */
+
+/* ── Route Map Toggle ── */
+.route-map-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; margin-bottom: 0;
+  background: var(--gray-50); border: 1px solid var(--gray-100);
+  border-radius: 10px 10px 0 0; cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 600; color: var(--gray-700);
+  transition: background 0.15s;
+}
+.route-map-toggle[aria-expanded="true"] {
+  border-bottom-color: transparent;
+  background: #eef4e8; border-color: var(--green-100);
+}
+.route-map-toggle:hover { background: #eef4e8; }
+.route-map-legend {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 7px 14px; background: var(--gray-50);
+  border: 1px solid var(--green-100); border-top: none; border-bottom: none;
+  font-size: 12px; color: var(--gray-600);
+}
+.route-map-dot {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; margin-right: 4px; vertical-align: middle;
+}
+
 @media (max-width: 480px) {
   .item-header { grid-template-columns: 1fr 120px 70px 32px; }
   .item-row { grid-template-columns: 1fr 120px 70px 32px; }

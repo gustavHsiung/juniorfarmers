@@ -4,7 +4,6 @@
 //                  getNearestMonday, esc）
 // =============================================
 
-const CN_NUM = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'半':0.5 };
 const ORDER_DATA_TARGET = '料理人下單';
 
 // ── Sub-tab 切換 ──────────────────────────────
@@ -54,7 +53,7 @@ async function autoFillPricesFromFarm() {
     const priceMap = {};
     (data.data || []).forEach(r => {
       if (r['品名'] && r['農二出貨價'])
-        priceMap[r['品名'].trim()] = r['農二出貨價'];
+        priceMap[r['品名'].trim()] = { price: r['農二出貨價'], unit: r['單位'] || '' };
     });
 
     farmPriceCache     = priceMap;
@@ -66,33 +65,80 @@ async function autoFillPricesFromFarm() {
 }
 
 function _findFarmPrice(priceMap, name) {
-  const n = name.trim();
-
-  // 第一優先：完全匹配
-  if (priceMap[n]) return priceMap[n];
-
-  // 第二優先：其中一方包含另一方（取最長的 key 優先避免誤匹配）
-  const keys = Object.keys(priceMap);
-  const matched = keys
-    .filter(k => k.includes(n) || n.includes(k))
-    .sort((a, b) => b.length - a.length); // 較長的優先（較精確）
-
-  return matched.length ? priceMap[matched[0]] : null;
+  // 回傳純價格字串（向後相容）
+  const entry = _findFarmPriceEntry(priceMap, name);
+  if (!entry) return null;
+  return typeof entry === 'object' ? entry.price : entry;
 }
 
 function _applyFarmPrices(priceMap) {
   orderRows.forEach(row => {
-    if (!row.price) {
+    if (row.totalAmount !== undefined) {
+      // 格式四：用農場單價反算數量
+      const farmEntry = _findFarmPriceEntry(priceMap, row.name);
+      if (farmEntry) {
+        const unitPrice = parseFloat(farmEntry.price);
+        if (unitPrice > 0) {
+          row.qty   = Math.round((row.totalAmount / unitPrice) * 100) / 100;
+          row.unit  = farmEntry.unit || row.unit;
+          row.price = farmEntry.price;
+        }
+      }
+      delete row.totalAmount;
+    } else if (!row.price) {
       const price = _findFarmPrice(priceMap, row.name);
       if (price) row.price = price;
     }
   });
 }
 
+// 回傳 { price, unit } 物件，供格式四反算數量使用
+function _findFarmPriceEntry(priceMap, name) {
+  const n = name.trim();
+  // priceMap 的值可能是純字串（向後相容）或 { price, unit } 物件
+  const wrap = v => (typeof v === 'object' && v !== null) ? v : { price: v, unit: '' };
+
+  if (priceMap[n]) return wrap(priceMap[n]);
+
+  const keys = Object.keys(priceMap);
+  const matched = keys
+    .filter(k => k.includes(n) || n.includes(k))
+    .sort((a, b) => b.length - a.length);
+
+  return matched.length ? wrap(priceMap[matched[0]]) : null;
+}
+
 function parseOrderText(rawText) {
-  const unitRe = UNITS.join('|');
+  let orderNid = 1; 
+
+  // 使用外部定義的 UNITS，並擴充英文縮寫（不影響外部檔案）
+  const parseUnits = [...UNITS, 'kg', 'g', 'ml', 'L'];
+  const unitRe = parseUnits.join('|');
   const numRe = '\\d+(?:\\.\\d+)?|[一二三四五六七八九十半]';
-  const itemRe = new RegExp(`^(.+?)[/／\\s+＋]*(${numRe})(${unitRe})\\s*$`);
+
+  // 格式一：品名＋數量＋單位 (如：筍子1支)
+  const itemRe = new RegExp(`^(.+?)(${numRe})(${unitRe})\\s*$`);
+
+  // 格式二：品名＋單價元/單位＊數量（單位）（備註） (如：烏殼筍80元/台斤*4支)
+  const priceUnitQtyRe = new RegExp(
+    `^(.+?)(\\d+(?:\\.\\d+)?)元[/／](${unitRe})\\s*[\\*×x＊]\\s*(${numRe})(${unitRe})?\\s*(?:（([^）]*)）|\\(([^)]*)\\))?\\s*$`
+  );
+
+  // 格式二B：品名＋單價元/單位（備註） (如：甜玉米150元/包(大約4〜6支))
+  const priceUnitNoteRe = new RegExp(
+    `^(.+?)(\\d+(?:\\.\\d+)?)元[/／](${unitRe})\\s*(?:（([^）]*)）|\\(([^)]*)\\))?\\s*$`
+  );
+
+  // 格式三：品名＋單價元/規格＊份數 (如：紫蘇葉子85元/100g*1)
+  const priceSpecQtyRe = new RegExp(
+    `^(.+?)(\\d+(?:\\.\\d+)?)元[/／]([^\\*×x＊（\\(]+)\\s*[\\*×x＊]\\s*(\\d+(?:\\.\\d+)?)\\s*(?:（([^）]*)）|\\(([^)]*)\\))?\\s*$`
+  );
+
+  // 【大優化】格式四：品名＋總金額元（允許元後面加上任意敘述與括號備註）
+  // 範例：小黃瓜 20元左右（2-3條） -> 抓出 20元、左右（2-3條）
+  const totalAmountRe = new RegExp(
+    `^(.+?)(\\d+(?:\\.\\d+)?)元(?:左右|上下)?\\s*(?:（([^）]*)）|\\(([^)]*)\\))?\\s*$`
+  );
 
   const result = [];
   let currentShop = '';
@@ -101,27 +147,86 @@ function parseOrderText(rawText) {
     line = line.trim();
     if (!line) return;
 
-    // Remove leading + / ＋
+    // 移除前導的 + 或 ＋
     const cleanLine = line.replace(/^[+＋]+\s*/, '');
 
-    // Try to match item pattern
-    const match = cleanLine.match(itemRe);
-    if (match) {
-      let qty = match[2];
+    // ── 1. 店家名稱判斷 ──
+    // 如果這行沒有任何金額「元」、沒有包含任何計量單位，且字數較短，就判定為店名
+    const hasPriceOrUnit = new RegExp(`元|${unitRe}`).test(cleanLine);
+    if (!hasPriceOrUnit && cleanLine.length <= 8 && !/下單|訂單/.test(cleanLine)) {
+      currentShop = cleanLine.replace(/[,，、。：:]+$/, '').trim();
+      return; 
+    }
+
+    // ── 2. 格式二：品名＋單價元/單位＊數量 ──
+    const m2 = cleanLine.match(priceUnitQtyRe);
+    if (m2) {
+      const name  = m2[1].replace(/[+＋/／\*×x＊]+/g, '').trim();
+      const price = m2[2];
+      const unit  = m2[5] || m2[3]; 
+      let   qty   = m2[4];
       qty = (CN_NUM[qty] !== undefined) ? CN_NUM[qty] : parseFloat(qty);
-      const name = match[1].replace(/[+＋/／]+/g, '').trim();
-      if (name) {
-        result.push({ id: orderNid++, shop: currentShop, name, qty, unit: match[3], price: '' });
-      }
-    } else {
-      // It's a shop name (skip obvious header lines)
-      if (!/下單|訂單/.test(cleanLine)) {
-        currentShop = cleanLine.replace(/[,，、。：:]+$/, '').trim();
-      }
+      const note  = (m2[6] || m2[7] || '').trim();
+      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty, unit, price, note });
+      return;
+    }
+
+    // ── 3. 格式二B：品名＋單價元/單位（後接括號備註）──
+    const m2b = cleanLine.match(priceUnitNoteRe);
+    if (m2b) {
+      const name  = m2b[1].replace(/[+＋/／]+/g, '').trim();
+      const price = m2b[2];
+      const unit  = m2b[3];
+      const note  = (m2b[4] || m2b[5] || '').trim();
+      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty: 1, unit, price, note });
+      return;
+    }
+
+    // ── 4. 格式三：品名＋單價元/規格＊份數 ──
+    const m3 = cleanLine.match(priceSpecQtyRe);
+    if (m3) {
+      const name  = m3[1].replace(/[+＋/／\*×x＊]+/g, '').trim();
+      const price = m3[2];
+      const spec  = m3[3].trim(); 
+      const qty   = parseFloat(m3[4]);
+      const note  = (m3[5] || m3[6] || '').trim();
+      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty, unit: spec, price, note });
+      return;
+    }
+
+    // ── 5. 格式一：品名＋數量＋單位 (包含 筍子1支 / 龍鬚菜 半斤) ──
+    const m1 = cleanLine.match(itemRe);
+    if (m1) {
+      let qty = m1[2];
+      qty = (CN_NUM[qty] !== undefined) ? CN_NUM[qty] : parseFloat(qty);
+      const name = m1[1].replace(/[+＋/／]+/g, '').trim();
+      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty, unit: m1[3], price: '', note: '' });
+      return;
+    }
+
+    // ── 6. 格式四：品名＋總金額元 (包含 小黃瓜 20元左右) ──
+    const m4 = cleanLine.match(totalAmountRe);
+    if (m4) {
+      const name        = m4[1].replace(/[+＋/／]+/g, '').trim();
+      const totalAmount = parseFloat(m4[2]);
+      const note        = (m4[3] || m4[4] || '').trim();
+      if (name) result.push({ id: orderNid++, shop: currentShop, name, qty: '', unit: '', price: '', totalAmount, note });
+      return;
+    }
+
+    // ── 7. 安全防禦：如果上面全漏接，保留原始文字，不污染店名 ──
+    if (cleanLine.length > 0) {
+      result.push({ id: orderNid++, shop: currentShop, name: cleanLine, qty: '', unit: '', price: '', note: '格式未完全匹配' });
     }
   });
+
+  // 單位標準化
+  const unitNorm = { 'kg': '公斤', 'g': '公克', '斤': '台斤' };
+  result.forEach(r => { if (unitNorm[r.unit]) r.unit = unitNorm[r.unit]; });
+
   return result;
 }
+
 
 async function parseAndPreview() {
   const raw = document.getElementById('orderRawText').value.trim();
@@ -169,8 +274,11 @@ function renderOrderPreview() {
     tr.innerHTML = `
       <td><input type="text" value="${esc(row.shop)}" placeholder="店家"
         style="font-size:12px" oninput="updateOrderRow(${row.id},'shop',this.value)" /></td>
-      <td><input type="text" value="${esc(row.name)}" placeholder="品名"
-        oninput="updateOrderRow(${row.id},'name',this.value)" /></td>
+      <td>
+        <input type="text" value="${esc(row.name)}" placeholder="品名"
+          oninput="updateOrderRow(${row.id},'name',this.value)" />
+        ${row.note ? `<div style="font-size:11px;color:var(--gray-400);margin-top:2px;font-style:italic">${esc(row.note)}</div>` : ''}
+      </td>
       <td><input type="number" min="0" step="0.1" value="${esc(row.qty)}" style="width:72px"
         oninput="updateOrderRow(${row.id},'qty',this.value)" /></td>
       <td><select style="width:72px" onchange="updateOrderRow(${row.id},'unit',this.value)">${unitOpts}</select></td>
@@ -647,6 +755,7 @@ async function saveOrderRow(sid, rowIdx) {
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
 
   const originalRow = data.rows[rowIdx];
+
   const subtotal = (qty && price) ? String((parseFloat(qty) * parseFloat(price)).toFixed(0)) : '';
   const updatedRow = { ...originalRow,
     品名: name, 數量: qty, 單位: unit,

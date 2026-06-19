@@ -1,5 +1,5 @@
 // =============================================
-// tab-browse.js — 供需分析  v1.0.0
+// tab-browse.js — 供需分析  v1.0.1
 // 依賴：shared.js（WEBHOOK_URL, formatDate, getNearestMonday, esc）
 // =============================================
 
@@ -76,14 +76,16 @@ async function _fetchAnalysisWithWeek(weekStr) {
   results.innerHTML = '';
   try {
     const weeksParam = encodeURIComponent(weekStr);
-    const [farmRes, orderRes] = await Promise.all([
+    const [farmRes, orderRes, tripRes] = await Promise.all([
       fetch(WEBHOOK_URL + '?action=query&weeks=' + weeksParam),
       fetch(WEBHOOK_URL + '?action=orderQuery&weeks=' + weeksParam),
+      fetch(WEBHOOK_URL + '?action=tripQuery&weeks=' + weeksParam),
     ]);
     const farmData  = await farmRes.json();
     const orderData = await orderRes.json();
+    const tripData  = await tripRes.json();
     spinner.style.display = 'none';
-    renderAnalysis(weekStr, farmData.data || [], orderData.data || []);
+    renderAnalysis(weekStr, farmData.data || [], orderData.data || [], tripData.data || []);
   } catch(e) {
     console.error('_fetchAnalysisWithWeek', e);
     spinner.style.display = 'none';
@@ -97,6 +99,180 @@ function itemMatch(a, b) {
   const nb = String(b || '').trim();
   if (!na || !nb) return false;
   return na.includes(nb) || nb.includes(na);
+}
+
+// ── 行程地圖（展開/收合）────────────────────
+let _leafletLoaded = false;
+let _routeMap = null;
+let _routeGeometryCache = null; // { totalKm, trips: [{trip, coords, routeCoords}] }
+let _currentTripRows = []; // 由 renderAnalysis 傳入，供地圖使用
+
+/** 解析 GPX 座標字串 (+22.8145698,+121.088959) → [lat, lng] */
+// ── GPX parse ────────────────
+function parseGPX(str) {
+  // (+22.8145698,+121.088959) → [22.8145698, 121.088959]
+  const m = String(str || '').match(/([\+\-]?\d+\.\d+),\s*([\+\-]?\d+\.\d+)/);
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
+}
+async function _fetchRouteGeometries() {
+  if (_routeGeometryCache) return _routeGeometryCache;
+
+  // 只取有出發＋到達 GPX 的收菜/送菜列
+  const movingRows = _currentTripRows.filter(r =>
+    (r['作業'] === '收菜' || r['作業'] === '送菜') &&
+    r['出發地點 GPX'] && r['到達地點 GPX']
+  );
+
+  // 先從 到達地點 建立地點類型表（收菜到達=農場，送菜到達=店家；農場優先）
+  const locationTypeMap = {};
+  movingRows.forEach(r => {
+    const name = (r['到達地點'] || '').trim();
+    if (!name) return;
+    const type = r['作業'] === '收菜' ? 'farm' : 'shop';
+    if (!locationTypeMap[name] || type === 'farm') locationTypeMap[name] = type;
+  });
+  const getType = (name, fallbackAct) =>
+    locationTypeMap[name] || (fallbackAct === '收菜' ? 'farm' : 'shop');
+
+  // 依「連續相同作業」分段（同趟次內可能混有收菜/送菜）
+  const groups = [];
+  movingRows.forEach(r => {
+    const act  = r['作業'];
+    const last = groups[groups.length - 1];
+    if (last && last.act === act) {
+      last.rows.push(r);
+    } else {
+      groups.push({ act, rows: [r], color: act === '收菜' ? '#3B6D11' : '#A65252' });
+    }
+  });
+
+  let totalM = 0;
+  const trips = await Promise.all(groups.map(async group => {
+    const { act, rows, color } = group;
+
+    // 串接停靠點序列（每列的出發點 + 最後一列的到達點，相鄰重複自動去除）
+    const rawCoords = [];
+    rows.forEach((r, i) => {
+      const dep = parseGPX(r['出發地點 GPX']);
+      if (dep) {
+        const name = (r['出發地點'] || '').trim();
+        if (!rawCoords.length || rawCoords[rawCoords.length - 1].name !== name)
+          rawCoords.push({ coord: dep, name, type: getType(name, act) });
+      }
+      if (i === rows.length - 1) {
+        const arr = parseGPX(r['到達地點 GPX']);
+        if (arr) rawCoords.push({ coord: arr, name: (r['到達地點'] || '').trim(), type: getType(r['到達地點'], act) });
+      }
+    });
+
+    const coords = rawCoords.map(p => p.coord);
+    const trip   = { label: act, color, act, stops: rawCoords };
+
+    if (coords.length < 2) return { trip, coords, routeCoords: coords };
+    try {
+      const lngLats = coords.map(([lat, lng]) => `${lng},${lat}`).join(';');
+      const res  = await fetch(`https://router.project-osrm.org/route/v1/driving/${lngLats}?overview=full&geometries=geojson`);
+      const data = await res.json();
+      const route = data.routes[0];
+      totalM += route.distance || 0;
+      const routeCoords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      return { trip, coords, routeCoords };
+    } catch {
+      return { trip, coords, routeCoords: coords };
+    }
+  }));
+
+  _routeGeometryCache = { totalKm: (totalM / 1000).toFixed(1), trips };
+  return _routeGeometryCache;
+}
+ 
+async function _updateRouteDistanceStat() {
+  const cache = await _fetchRouteGeometries();
+  const el = document.getElementById('routeDistanceVal');
+  if (el) el.textContent = cache.totalKm;
+}
+
+function toggleRouteMap() {
+  const wrap = document.getElementById('routeMapWrap');
+  const btn  = document.getElementById('routeMapToggleBtn');
+  if (!wrap) return;
+  const opening = wrap.style.display === 'none' || wrap.style.display === '';
+  wrap.style.display = opening ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', opening);
+  btn.querySelector('.route-map-arrow').style.transform = opening ? 'rotate(180deg)' : '';
+  if (opening) _ensureLeaflet(_initRouteMap);
+}
+
+async function _initRouteMap() {
+  if (!window.L) return;
+  if (_routeMap) { _routeMap.invalidateSize(); return; }
+ 
+  _routeMap = L.map('routeMapCanvas').setView([22.93, 121.12], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 18,
+  }).addTo(_routeMap);
+ 
+  const bounds = [];
+  const cache  = await _fetchRouteGeometries();
+ 
+  cache.trips.forEach(({ trip, coords, routeCoords }) => {
+    coords.forEach(c => bounds.push(c));
+    if (coords.length < 2) return;
+    const isRoad = routeCoords !== coords;
+    L.polyline(routeCoords, {
+      color: trip.color, weight: 4, opacity: 0.8,
+      ...(isRoad ? {} : { dashArray: '6 4' }),
+    }).addTo(_routeMap);
+  });
+ 
+  // 動態收集所有不重複地點（出發+到達）
+  const seenMarkers = {};
+  cache.trips.forEach(({ trip }) => {
+    trip.stops.forEach(p => {
+      if (!p.name) return;
+      // farm 優先：若已標記為 farm 則不覆蓋
+      if (!seenMarkers[p.name] || p.type === 'farm')
+        seenMarkers[p.name] = { coord: p.coord, type: p.type };
+    });
+  });
+  Object.entries(seenMarkers).forEach(([name, { coord, type }]) => {
+    const isFarm = type === 'farm';
+    const color  = isFarm ? '#3B6D11' : '#A65252';
+    const emoji  = isFarm ? '🌿' : '🍽️';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        background:${color};color:#fff;
+        font-size:11px;font-weight:600;
+        padding:3px 7px;border-radius:12px;
+        white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);
+        display:flex;align-items:center;gap:4px;
+      ">${emoji} ${esc(name)}</div>`,
+      iconAnchor: [0, 12],
+    });
+    L.marker(coord, { icon })
+      .addTo(_routeMap)
+      .bindPopup(`<b>${esc(name)}</b><br>${isFarm ? '農場' : '店家'}`);
+  });
+ 
+  if (bounds.length) _routeMap.fitBounds(bounds, { padding: [28, 28] });
+}
+
+function _ensureLeaflet(cb) {
+  if (window.L) { cb(); return; }
+  // 載入 Leaflet CSS
+  if (!document.getElementById('leaflet-css')) {
+    const link = document.createElement('link');
+    link.id = 'leaflet-css';
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+  }
+  // 載入 Leaflet JS
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  script.onload = cb;
+  document.head.appendChild(script);
 }
 
 // ── 主查詢（日期選擇器觸發）────────────────
@@ -121,8 +297,12 @@ async function fetchAnalysisData() {
 }
 
 // ── 渲染分析結果 ─────────────────────────────
-function renderAnalysis(weekStr, farmRows, orderRows) {
+function renderAnalysis(weekStr, farmRows, orderRows, tripRows) {
   const results = document.getElementById('analysisResults');
+  // 每次重新渲染時重置地圖與路線 cache
+  if (_routeMap) { _routeMap.remove(); _routeMap = null; }
+  _routeGeometryCache = null;
+  _currentTripRows = tripRows;
 
   if (!farmRows.length && !orderRows.length) {
     results.innerHTML = '<div class="browse-empty"><span class="empty-icon">🌱</span>本週無任何資料。</div>';
@@ -181,11 +361,25 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
     <div class="browse-summary" style="margin-bottom:12px">
       ${weekStr} 供需分析
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
       ${_statCard('農場', farms.size, '🌿')}
       ${_statCard('供應品項', farmItems.length, '🥬')}
-      ${_statCard('餐廳', shops.size, '🍽️')}
+      ${_statCard('店家/料理人', shops.size, '🍽️')}
       ${_statCard('訂單品項', orderItems.length, '📋')}
+      ${_statCard('里程估算', '<span id="routeDistanceVal">…</span><span style="font-size:13px;font-weight:400"> km</span>', '🛣️')}
+    </div>
+    <button id="routeMapToggleBtn" class="route-map-toggle" onclick="toggleRouteMap()" aria-expanded="false">
+      <span>🗺️ 本週行程地圖</span>
+      <span class="route-map-arrow" style="transition:transform 0.25s;display:inline-block;font-size:11px;color:var(--gray-400)">▼</span>
+    </button>
+    <div id="routeMapWrap" style="display:none;margin-bottom:8px">
+      <div class="route-map-legend">
+        <span><span class="route-map-dot" style="background:#3B6D11"></span>農場</span>
+        <span><span class="route-map-dot" style="background:#A65252"></span>店家</span>
+        <span><span class="route-map-dot" style="background:#3B6D11"></span>收菜路線</span>
+        <span><span class="route-map-dot" style="background:#A65252"></span>送菜路線</span>
+      </div>
+      <div id="routeMapCanvas" style="height:300px;border-radius:0 0 10px 10px;overflow:hidden"></div>
     </div>`;
 
   // ── 🟢 有供有訂：依 農場+品名 合併，訂單顯示為 inline tags ──
@@ -266,6 +460,8 @@ function renderAnalysis(weekStr, farmRows, orderRows) {
 
   results.innerHTML = html;
   renderMatchedCards('default');
+  _ensureLeaflet(() => {});
+  _updateRouteDistanceStat();
 }
 
 function _matchedCardHtml(g) {
