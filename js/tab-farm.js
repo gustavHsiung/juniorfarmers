@@ -462,6 +462,9 @@ async function saveRow(sid, rowIdx) {
 
   if (!name || !price) { alert('品名和進貨價為必填'); return; }
 
+  const converted = convertToJin({ qty, unit, price, wholesalePrice: wp, wholesaleThreshold: wt,
+                                     retailPrice: rp, actualPrice: ap, itemNote: note });
+  
   const saveBtn = document.getElementById(`ei-save-${rowId}`);
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
 
