@@ -84,3 +84,36 @@ function esc(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+/** 公斤到台斤 */
+// 台斤＝600克，重量單位換算基準（換算成台斤價）
+const JIN_CONVERSION_FACTORS = { '公斤': 1000/600, '公克': 1/600, '斤': 1 };
+
+function convertToJin({ qty, unit, price, wholesalePrice, wholesaleThreshold, retailPrice, actualPrice, itemNote }) {
+  const k = JIN_CONVERSION_FACTORS[unit];
+  if (!k) return { qty, unit, price, wholesalePrice, wholesaleThreshold, retailPrice, actualPrice, itemNote };
+
+  const num  = v => (v !== '' && v !== undefined && v !== null && !isNaN(v)) ? parseFloat(v) : null;
+  const conv = (v, mul, decimals) => { const n = num(v); return n === null ? v : +(n * mul).toFixed(decimals); };
+
+  const newQty = conv(qty, k, 2);
+  const newWt  = conv(wholesaleThreshold, k, 2);
+  const newPrice = conv(price, 1 / k, 0);
+  const newWp    = conv(wholesalePrice, 1 / k, 0);
+  const newRp    = conv(retailPrice, 1 / k, 0);
+  const newAp    = conv(actualPrice, 1 / k, 0);
+
+  const parts = [];
+  if (qty || price) parts.push(`${qty || ''} ${unit}／進貨價${price || '—'}元`);
+  if (wholesalePrice) parts.push(`批價${wholesalePrice}元${wholesaleThreshold ? `(${wholesaleThreshold}${unit}以上)` : ''}`);
+  if (retailPrice) parts.push(`建議售價${retailPrice}元`);
+  if (actualPrice) parts.push(`農二出貨價${actualPrice}元`);
+  const originalNote = `（原始輸入：${parts.join('／')}）`;
+
+  return {
+    qty: newQty, unit: '台斤', price: newPrice,
+    wholesalePrice: newWp, wholesaleThreshold: newWt,
+    retailPrice: newRp, actualPrice: newAp,
+    itemNote: itemNote ? `${itemNote} ${originalNote}` : originalNote,
+  };
+}

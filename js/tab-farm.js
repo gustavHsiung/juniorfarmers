@@ -129,13 +129,16 @@ async function handleSubmit() {
 
   const ts   = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
   const name = document.getElementById('register').value.trim();
-  const rows = valid.map((i, idx) => ({
-    時間戳記: ts, 登記人: name, 農場: farm,
-    週次: formatDate(weekDate), 品名: i.name, 數量: i.qty, 單位: i.unit,
-    基本進貨價: i.price, 批價: i.wholesalePrice, 批價門檻: i.wholesaleThreshold,
-    末端建議售價: i.retailPrice, 農二出貨價: i.actualPrice, 品項備注: i.itemNote,
-    備註: idx === 0 ? document.getElementById('notes').value.trim() : '',
-  }));
+  const rows = valid.map((i, idx) => {
+    const converted = convertToJin(i);
+    return {
+      時間戳記: ts, 登記人: name, 農場: farm,
+      週次: formatDate(weekDate), 品名: i.name, 數量: converted.qty, 單位: converted.unit,
+      基本進貨價: converted.price, 批價: converted.wholesalePrice, 批價門檻: converted.wholesaleThreshold,
+      末端建議售價: converted.retailPrice, 農二出貨價: converted.actualPrice, 品項備注: converted.itemNote,
+      備註: idx === 0 ? document.getElementById('notes').value.trim() : '',
+    };
+  });
 
   try {
     await fetch(WEBHOOK_URL, {
@@ -464,9 +467,9 @@ async function saveRow(sid, rowIdx) {
 
   const originalRow = data.rows[rowIdx];
   const updatedRow  = { ...originalRow,
-    品名: name, 數量: qty, 單位: unit,
-    基本進貨價: price, 批價: wp, 批價門檻: wt,
-    末端建議售價: rp, 農二出貨價: ap, 品項備注: note };
+    品名: name, 數量: converted.qty, 單位: converted.unit,
+    基本進貨價: converted.price, 批價: converted.wholesalePrice, 批價門檻: converted.wholesaleThreshold,
+    末端建議售價: converted.retailPrice, 農二出貨價: converted.actualPrice, 品項備注: converted.itemNote };
 
   try {
     const res = await fetch(WEBHOOK_URL, {
@@ -476,11 +479,12 @@ async function saveRow(sid, rowIdx) {
         action: 'updateRow',
         target: FARM_DATA_TARGET,
         提交ID: originalRow['提交ID'],
-        row: { 品名: name, 數量: qty, 單位: unit,
-               基本進貨價: price, 批價: wp, 批價門檻: wt,
-               末端建議售價: rp, 農二出貨價: ap, 品項備注: note },
+        row: { 品名: name, 數量: converted.qty, 單位: converted.unit,
+               基本進貨價: converted.price, 批價: converted.wholesalePrice, 批價門檻: converted.wholesaleThreshold,
+               末端建議售價: converted.retailPrice, 農二出貨價: converted.actualPrice, 品項備注: converted.itemNote },
       }),
     });
+
     const result = await res.json();
     if (result.status !== 'success') throw new Error(result.message || '伺服器回傳錯誤');
     editStore[sid].rows = data.rows.map((r, i) => i === rowIdx ? updatedRow : r);
