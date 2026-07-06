@@ -606,7 +606,7 @@ function renderOrderBrowseResults(rows) {
       else if (payStatus === '已付款')   { payClass = 'paid'; }
       else if (payStatus === '貨到付款') { payClass = 'cod'; }
 
-      const editBtn = rowId ? `<button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+      const editBtn = rowId ? `<button class="row-action-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
 
       html += `<tr${rowId ? ` id="${rowId}"` : ''}>
         <td>${esc(r['品名']||'')}</td>
@@ -732,7 +732,7 @@ function restoreOrderRow(sid, rowIdx) {
     <td><span class="pay-pill ${payClass}">${esc(payLabel)}</span></td>
     <td>${note}</td>
     <td style="text-align:center;width:36px">
-      <button class="row-edit-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
+      <button class="row-action-btn" onclick="editOrderRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>
     </td>`;
 }
 

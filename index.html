@@ -137,7 +137,7 @@
         <div class="error-msg" id="errorMsg"></div>
       </div>
 
-      <div class="success-box" id="successBox">
+      <div class="success-box" id="successBox" style="display:none">
         <span class="big-check">✅</span>
         <h2>登記成功！</h2>
         <p id="successDetail"></p>
@@ -167,11 +167,23 @@
         </div>
       </div>
       <div class="browse-spinner-wrap" id="browseSpinner"><div class="browse-spinner"></div></div>
+      <div class="card" id="copyToNewWeekCard" style="display:none">
+        <div>
+          <div class="card-row">
+            <label for="copyTargetDate">複製到目標週次（可出貨的週一）</label>
+            <input type="date" id="copyTargetDate" />
+            <button class="submit-btn slim-btn" id="copyConfirmBtn" onclick="confirmCopyStaging()" disabled>
+              確定新增（<span id="copyStagingCount">0</span> 項）
+            </button>
+          </div>
+        
+        </div>
+        <div id="copyStagingList">（按 👯‍♂️ 新增品項）</div>      
+      </div>
       <div id="searchResults">
         <div class="browse-empty"><span class="empty-icon">🌱</span>請選擇週次後按「查詢」</div>
       </div>
     </div>
-
   </div><!-- /panelRegister -->
 
   <!-- ═══ ORDER TAB（餐廳）═══ -->

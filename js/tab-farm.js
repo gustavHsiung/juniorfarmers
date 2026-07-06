@@ -187,6 +187,7 @@ function _submitIcon() {
 // ════════════════════════════════════════════
 let selectedWeeks = new Set();
 let editStore     = {};
+let copyStagingItems = [];
 
 // ── 週次 chips ────────────────────────────────
 async function loadWeekChips() {
@@ -261,6 +262,7 @@ async function fetchBrowseData() {
     const data = await res.json();
     spinner.style.display = 'none';
     renderSearchResults(data.data || []);
+    showCopyCard();
   } catch(e) {
     console.error('查詢失敗', e);
     spinner.style.display = 'none';
@@ -285,8 +287,15 @@ function prepEditRow(row) {
   editStore[sid].rows.push(row);
 }
 
+function showCopyCard(){
+  const copyCard = document.getElementById('copyToNewWeekCard');
+  copyCard.style.display = 'block';
+}
+function hideCopyCard(){
+  const copyCard = document.getElementById('copyToNewWeekCard');
+  copyCard.style.display = 'none';
+}
 function renderSearchResults(rows) {
-  console.log('test');
   editStore = {};
   const container = document.getElementById('searchResults');
   if (!rows.length) {
@@ -314,7 +323,7 @@ function renderSearchResults(rows) {
       </div>`;
     if (note) html += `<div class="farm-note-banner"><span class="note-label">📝</span><span>${esc(note)}</span></div>`;
     html += `<table class="browse-table"><thead><tr>
-      <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th>農二出貨價</th><th></th>
+      <th>品名</th><th>數量</th><th>進貨 / 批價</th><th>建議零售</th><th>農二出貨價</th><th></th><th></th>
     </tr></thead><tbody>`;
 
     const sidCounters = {};
@@ -337,7 +346,8 @@ function renderSearchResults(rows) {
         ? `<span class="price-pill" style="background:#EEF4FF;border-color:#B0C8F0;color:#2850A0">$${esc(r['農二出貨價'])}</span>`
         : '<span style="color:var(--gray-400)">—</span>';
       const itemNote = r['品項備注'] ? `<div class="item-note-badge">　${esc(r['品項備注'])}</div>` : '';
-      const editBtn  = sid ? `<button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+      const editBtn  = sid ? `<button class="row-action-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button>` : '';
+      const copyBtn  = sid ? `<button class="row-action-btn" onclick="addToCopyStaging('${esc(sid)}',${rowIdx})" aria-label="複製">👯‍♂️</button>` : '';
 
       html += `<tr${rowId ? ` id="${rowId}"` : ''}>
         <td>${esc(r['品名'] || '')}${itemNote}</td>
@@ -346,6 +356,7 @@ function renderSearchResults(rows) {
         <td>${retailHtml}</td>
         <td>${actualHtml}</td>
         <td style="text-align:center;width:36px">${editBtn}</td>
+        <td style="text-align:center;width:36px">${copyBtn}</td>
       </tr>`;
     });
     html += `</tbody></table></div>`;
@@ -440,8 +451,11 @@ function restoreRow(sid, rowIdx) {
     <td>${retailHtml}</td>
     <td>${actualHtml}</td>
     <td style="text-align:center;width:36px">
-      <button class="row-edit-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎:D</button>
-    </td>`;
+      <button class="row-action-btn" onclick="editRow('${esc(sid)}',${rowIdx})" aria-label="編輯">✎</button> 
+    </td>
+    <td style="text-align:center;width:36px">
+      <button class="row-action-btn" onclick="addToCopyStaging('${esc(sid)}',${rowIdx})" aria-label="複製">+</button>;
+    </td>`    
 }
 
 async function saveRow(sid, rowIdx) {
@@ -495,5 +509,99 @@ async function saveRow(sid, rowIdx) {
   } catch(e) {
     alert(`儲存失敗：${e.message}`);
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✓'; }
+  }
+}
+
+function addToCopyStaging(sid, rowIdx) {
+  const data = editStore[sid];
+  if (!data) return;
+
+  const r     = data.rows[rowIdx];
+  if (!r) return;
+
+  const key = `${sid}-${rowIdx}`;
+  if (copyStagingItems.some(i => i.key === key)) return; // 已加入過，避免重複
+
+  copyStagingItems.push({
+    key,
+    farm: r['農場'] || '',
+    registrant: r['登記人'] || '',
+    name: r['品名'] || '',
+    qty: r['數量'] || '',
+    unit: r['單位'] || '',
+    price: r['基本進貨價'] || '',
+    wholesalePrice: r['批價'] || '',
+    wholesaleThreshold: r['批價門檻'] || '',
+    retailPrice: r['末端建議售價'] || '',
+    actualPrice: r['農二出貨價'] || '',
+    itemNote: r['品項備注'] || '',
+  });
+
+  renderCopyStaging();
+
+}
+
+function removeFromCopyStaging(key) {
+  copyStagingItems = copyStagingItems.filter(i => i.key !== key);
+  renderCopyStaging();
+}
+
+function renderCopyStaging() {
+  const list    = document.getElementById('copyStagingList');
+  const btn     = document.getElementById('copyConfirmBtn');
+  const countEl = document.getElementById('copyStagingCount');
+
+  countEl.textContent = copyStagingItems.length;
+  btn.disabled = copyStagingItems.length === 0;
+
+  if (!copyStagingItems.length) {
+    list.innerHTML = '<span style="color:var(--gray-400);font-size:13px">尚未選擇品項，請在下方清單點「＋」加入</span>';
+    return;
+  }
+
+  list.innerHTML = copyStagingItems.map(i => `
+    <span style="display:inline-flex;align-items:center;gap:5px;background:var(--green-50);border:1px solid var(--green-100);border-radius:20px;padding:3px 6px 3px 12px;font-size:12px;color:var(--green-600);margin:0 4px 6px 0">
+      <span style="color:var(--gray-400);font-weight:400">${esc(i.farm)}　</span>${esc(i.name)}
+      <button onclick="removeFromCopyStaging('${esc(i.key)}')"
+        style="border:none;background:none;color:var(--gray-400);cursor:pointer;font-size:14px;line-height:1;padding:0 2px"
+        aria-label="移除">×</button>
+    </span>`).join('');
+}
+
+async function confirmCopyStaging() {
+  const dateVal = document.getElementById('copyTargetDate').value;
+  if (!dateVal) { alert('請選擇目標週次'); return; }
+  if (!copyStagingItems.length) return;
+
+  const btn = document.getElementById('copyConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 送出中…';
+
+  const ts      = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+  const weekStr = formatDate(dateVal);
+  const rows = copyStagingItems.map(i => ({
+    時間戳記: ts, 登記人: i.registrant, 農場: i.farm, 週次: weekStr,
+    品名: i.name, 數量: i.qty, 單位: i.unit,
+    基本進貨價: i.price, 批價: i.wholesalePrice, 批價門檻: i.wholesaleThreshold,
+    末端建議售價: i.retailPrice, 農二出貨價: i.actualPrice, 品項備注: i.itemNote,
+    備註: '',
+  }));
+
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows }),
+    });
+    alert(`已複製 ${rows.length} 項到 ${weekStr}`);
+    copyStagingItems = [];
+
+    btn.disabled = false;
+    btn.innerHTML = '確定新增（<span id="copyStagingCount">0</span> 項）';
+
+  } catch (e) {
+    alert('複製失敗，請確認網路或 Webhook 設定。');
+  } finally {
+    renderCopyStaging(); // 重繪：成功則清空、失敗則保留原暫存內容，按鈕狀態一併還原
   }
 }

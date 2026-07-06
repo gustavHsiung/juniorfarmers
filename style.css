@@ -98,6 +98,21 @@ body {
 .container { max-width: 640px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
 .card { background: #fff; border: 1px solid #e2e0d8; border-radius: 14px; padding: 1.1rem; margin-bottom: 1rem; }
 .card-title { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.card-row { 
+  display:flex; 
+  align-items: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+    
+  input[type=date] {
+    width: auto;
+  }
+  .submit-btn {
+    width: auto;
+  }
+}
+
 .field { margin-bottom: 11px; }
 .field:last-child { margin-bottom: 0; }
 label { display: block; font-size: 13px; color: var(--gray-600); margin-bottom: 5px; }
@@ -140,7 +155,11 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
 .submit-btn.red-btn { background: var(--red-600); }
 .submit-btn.red-btn:hover { background: var(--red-800); }
-.row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: darkgreen;}
+.slim-btn { padding: 8px 10px; }
+.row-action-btn { 
+  border: none;padding: 8px 10px; border-radius: 3px; color: darkgreen; 
+  font-size: large; min-width: 40px;
+}}
 
 /* ── Feedback ── */
 .success-box { display: none; background: var(--green-50); border: 1.5px solid var(--green-100); border-radius: 12px; padding: 1.25rem 1.1rem; text-align: center; }
@@ -187,7 +206,13 @@ textarea { resize: vertical; min-height: 72px; font-size: 14px; }
 .browse-summary { font-size: 12px; color: var(--gray-400); padding: 0.6rem 0 0.2rem; text-align: right; }
 
 .order-browse-table .row-edit-btn { border: none;padding: 2px 5px; border-radius: 3px; color: var(--red-600);}
-
+.card {
+  copyStagingList {
+    border-color: var(--green-400);
+    border-radius: 8px;
+    background: #eef4e8;
+  }
+}
 /* ── Order entry ── */
 .order-raw-textarea {
   width: 100%; min-height: 160px;
